@@ -9,6 +9,7 @@
 #include "Koopas.h"
 #include "Map.h"
 #include "Camera.h"
+#include "define.h"
 
 
 class CPlayScene: public CScene

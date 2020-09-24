@@ -13,6 +13,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	CScene(id, filePath)
 {
 	key_handler = new CPlayScenceKeyHandler(this);
+	cam = Camera::GetInstance();
 }
 
 /*
@@ -156,7 +157,17 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		DebugOut(L"[INFO] Player object created!\n");
 		break;
 	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(); break;
-	case OBJECT_TYPE_BRICK: obj = new CBrick(); break;
+	case OBJECT_TYPE_BRICK: 
+	{
+		obj = new CBrick();
+		int w = atof(tokens[4].c_str());
+		int h = atof(tokens[5].c_str());
+		CBrick* brick=(CBrick*)obj;
+		brick->width = w;
+		brick->height = h;
+		break;
+	}
+
 	case OBJECT_TYPE_KOOPAS: obj = new CKoopas(); break;
 	case OBJECT_TYPE_PORTAL:
 		{	
@@ -263,22 +274,78 @@ void CPlayScene::Update(DWORD dt)
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
 	if (player == NULL) return; 
 
+	//// Update camera to follow mario
+	//float cx, cy;
+	//player->GetPosition(cx, cy);
+
+	//CGame *game = CGame::GetInstance();
+	//cx -= game->GetScreenWidth() / 2;
+	//cy -= game->GetScreenHeight() / 2;
+
+	//CGame::GetInstance()->SetCamPos((int)cx, (int)30.0f /*cy*/);
+
 	// Update camera to follow mario
-	float cx, cy;
+	float cx, cy, mapheight, mapwidth;
+	mapheight = map->GetHeight();
+	mapwidth = map->GetWidth();
 	player->GetPosition(cx, cy);
 
-	CGame *game = CGame::GetInstance();
-	cx -= game->GetScreenWidth() / 2;
-	cy -= game->GetScreenHeight() / 2;
+	D3DXVECTOR3 pos = cam->GetCameraPosition();
+	if (mapwidth > SCREEN_WIDTH) {
+		if (cx + 5 < SCREEN_WIDTH / 2) {
+			cx = pos.x;
+		}
+		else if (cx + SCREEN_WIDTH / 2 > mapwidth - 1) {
+			cx = mapwidth - SCREEN_WIDTH;
+		}
+		else {
+			cx = cx + 5 + SCREEN_WIDTH / 2 - SCREEN_WIDTH;
+		}
+	}
+	else {
+		cx = 0;
+	}
 
-	CGame::GetInstance()->SetCamPos((int)cx, (int)0.0f /*cy*/);
+	if (mapheight > SCREEN_HEIGHT )
+	{
+		if (cy < mapheight - SCREEN_HEIGHT) {
+			cy = cy - SCREEN_HEIGHT;
+		}
+		else {
+			cy = mapheight - SCREEN_HEIGHT+32;
+		}
+	}
+	else {
+		cy = mapheight - SCREEN_HEIGHT;
+	}
+	if (cy < 0) cy = 0;
+	cam->SetCameraPosition((int)cx, (int)cy);
+
+	//for (size_t i = 0; i < objects.size(); i++)
+	//{
+	//	if (dynamic_cast<Torch*>(objects[i]))
+	//	{
+	//		Torch* torch = dynamic_cast<Torch*>(objects[i]);
+	//		if (torch->isColi == true)
+	//			//Grid* grid = Grid::GetInstance();
+	//			grid->deleteObject(objects[i]);
+	//	}
+	//	else if (dynamic_cast<Candle*>(objects[i]))
+	//	{
+	//		Candle* candle = dynamic_cast<Candle*>(objects[i]);
+	//		if (candle->isColi == true)
+	//			//Grid* grid = Grid::GetInstance();
+	//			grid->deleteObject(objects[i]);
+	//	}
+	//}
 }
 
 void CPlayScene::Render()
 {
+	map->DrawMap();
+
 	for (int i = 0; i < objects.size(); i++)
 		objects[i]->Render();
-	map->DrawMap();
 }
 
 /*
@@ -298,15 +365,27 @@ void CPlayScene::Unload()
 void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 {
 	//DebugOut(L"[INFO] KeyDown: %d\n", KeyCode);
-
+	CGame* game = CGame::GetInstance();
 	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
 	switch (KeyCode)
 	{
-	case DIK_SPACE:
-		mario->SetState(MARIO_STATE_JUMP);
+	case DIK_S:
+		if (mario->isJump)
+			break;
+		//mario->isBonusvx = true;
+		mario->hold_dik_s_start = GetTickCount();
+
+		if (mario->nx > 0)
+			mario->SetState(MARIO_STATE_JUMP_RIGHT);
+		else
+			mario->SetState(MARIO_STATE_JUMP_LEFT);
+		//mario->SetState(MARIO_STATE_JUMP);
 		break;
 	case DIK_A: 
 		mario->Reset();
+		break;
+	case DIK_ESCAPE:
+		DestroyWindow(game->getHwnd());
 		break;
 	}
 }
@@ -323,5 +402,11 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 	else if (game->IsKeyDown(DIK_LEFT))
 		mario->SetState(MARIO_STATE_WALKING_LEFT);
 	else
-		mario->SetState(MARIO_STATE_IDLE);
+		if (!mario->isJump)
+			//mario->SetState(MARIO_STATE_IDLE);
+			;
+		else
+			if (game->IsKeyDown(DIK_S) && mario->isJump && mario->vy < 0)
+				mario->time_hold_dik_s = GetTickCount() - mario->hold_dik_s_start;
+
 }
