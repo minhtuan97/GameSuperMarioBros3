@@ -27,12 +27,25 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	CGameObject::Update(dt);
 
 	// Simple fall down
-	if (hold_dik_s && isBonusvx)
-	{
-		vy += MARIO_GRAVITY * dt - 0.13f;
-		isBonusvx = false;
-	}
+	//if (hold_dik_s && isBonusvx)
+	//{
+	//	vy += MARIO_GRAVITY * dt - 0.13f;
+	//	isBonusvx = false;
+	//}
 	vy += MARIO_GRAVITY*dt;
+	
+	if (state == MARIO_STATE_WALKING_RIGHT)
+	{
+		vx -= 0.2*MARIO_GRAVITY * dt;
+		if (vx < 0)
+			SetState(MARIO_STATE_IDLE);
+	}
+	if (state == MARIO_STATE_WALKING_LEFT)
+	{
+		vx += 0.2*MARIO_GRAVITY * dt;
+		if (vx > 0)
+			SetState(MARIO_STATE_IDLE);
+	}
 
 	vector<LPCOLLISIONEVENT> coEvents;
 	vector<LPCOLLISIONEVENT> coEventsResult;
@@ -73,7 +86,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		x += min_tx*dx + nx*0.2f;
 		y += min_ty*dy + ny*0.2f;
 
-		if (nx!=0) vx = 0;
+		//if (nx!=0) vx = 0;
 		if (ny!=0) vy = 0;
 
 
@@ -129,7 +142,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					//if(state==MARIO_STATE_JUMP_LEFT|| state == MARIO_STATE_JUMP_RIGHT)
 					if (isJump)
 						SetState(MARIO_STATE_IDLE);
-					if(vx==0&&vy==0)
+					if(vx==0)
 						SetState(MARIO_STATE_IDLE);
 					if(hold_dik_s)
 						hold_dik_s = false;
@@ -203,7 +216,7 @@ void CMario::Render()
 
 	int alpha = 255;
 	if (untouchable) alpha = 128;
-	DebugOut(L"isJump:%d, state=%d, ani=%d\n",isJump, state,ani);
+	DebugOut(L"vx=%f, isJump:%d, state=%d, ani=%d\n",vx,isJump, state,ani);
 	animation_set->at(ani)->Render(x, y, alpha);
 
 	RenderBoundingBox();
@@ -211,16 +224,22 @@ void CMario::Render()
 
 void CMario::SetState(int state)
 {
+	//if (this->state == state)
+	//	return;
 	CGameObject::SetState(state);
 
 	switch (state)
 	{
 	case MARIO_STATE_WALKING_RIGHT:
-		vx = MARIO_WALKING_SPEED;
+		//vx = MARIO_WALKING_SPEED;
+		if (vx < 0.15)
+			vx += 0.005f;
 		nx = 1;
 		break;
 	case MARIO_STATE_WALKING_LEFT: 
-		vx = -MARIO_WALKING_SPEED;
+		//vx = -MARIO_WALKING_SPEED;
+		if (vx > -0.15)
+			vx -= 0.005f;
 		nx = -1;
 		break;
 	case MARIO_STATE_JUMP:
