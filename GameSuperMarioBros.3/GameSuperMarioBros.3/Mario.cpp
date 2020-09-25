@@ -27,28 +27,26 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	CGameObject::Update(dt);
 
 	// Simple fall down
-	//if (hold_dik_s && isBonusvx)
-	//{
-	//	vy += MARIO_GRAVITY * dt - 0.13f;
-	//	isBonusvx = false;
-	//}
 	vy += MARIO_GRAVITY*dt;
-	if (isJump && vy < -0.23f)
-		isBonusvy = false;
 
-	if (state == MARIO_STATE_WALKING_RIGHT)
+	if (!ispressX)
 	{
-		vx -= 0.1*MARIO_GRAVITY * dt;
-		if (vx < 0)
-			SetState(MARIO_STATE_IDLE);
-	}
-	if (state == MARIO_STATE_WALKING_LEFT)
-	{
-		vx += 0.1*MARIO_GRAVITY * dt;
-		if (vx > 0)
-			SetState(MARIO_STATE_IDLE);
-	}
+		if (isJump && vy < -0.27f)
+			isBonusvy = false;
 
+		if (state == MARIO_STATE_WALKING_RIGHT)
+		{
+			vx -= 0.1 * MARIO_GRAVITY * dt;
+			if (vx < 0)
+				SetState(MARIO_STATE_IDLE);
+		}
+		if (state == MARIO_STATE_WALKING_LEFT)
+		{
+			vx += 0.1 * MARIO_GRAVITY * dt;
+			if (vx > 0)
+				SetState(MARIO_STATE_IDLE);
+		}
+	}
 	vector<LPCOLLISIONEVENT> coEvents;
 	vector<LPCOLLISIONEVENT> coEventsResult;
 
@@ -147,6 +145,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					if(vx==0)
 						SetState(MARIO_STATE_IDLE);
 					isBonusvy = true;
+					ispressX = false;
 				}
 				/*else if (e->nx != 0)
 				{
@@ -250,8 +249,11 @@ void CMario::SetState(int state)
 	case MARIO_STATE_JUMP_LEFT:
 	case MARIO_STATE_JUMP_RIGHT:
 		isJump = true;
-		if (isBonusvy)
-			vy -= MARIO_JUMP_SPEED_Y;
+		if (ispressX == true)
+			vy = -0.23f;
+		else
+			if (isBonusvy)
+				vy -= MARIO_JUMP_SPEED_Y;
 		break;
 	case MARIO_STATE_IDLE: 
 		vx = 0;

@@ -369,18 +369,15 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
 	switch (KeyCode)
 	{
-	//case DIK_S:
-	//	if (mario->isJump)
-	//		break;
-	//	//mario->isBonusvx = true;
-	//	mario->hold_dik_s_start = GetTickCount64();
-
-	//	if (mario->nx > 0)
-	//		mario->SetState(MARIO_STATE_JUMP_RIGHT);
-	//	else
-	//		mario->SetState(MARIO_STATE_JUMP_LEFT);
-	//	//mario->SetState(MARIO_STATE_JUMP);
-	//	break;
+	case DIK_X:
+		if (mario->isJump)
+			break;
+		mario->ispressX = true;
+		if (mario->nx > 0)
+			mario->SetState(MARIO_STATE_JUMP_RIGHT);
+		else
+			mario->SetState(MARIO_STATE_JUMP_LEFT);
+		break;
 	case DIK_A: 
 		mario->Reset();
 		break;

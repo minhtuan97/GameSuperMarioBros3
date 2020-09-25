@@ -3,7 +3,7 @@
 
 #define MARIO_WALKING_SPEED		0.01f 
 //0.1f
-#define MARIO_JUMP_SPEED_Y		0.03f
+#define MARIO_JUMP_SPEED_Y		0.05f
 #define MARIO_JUMP_DEFLECT_SPEED 0.2f
 #define MARIO_GRAVITY			0.001f
 #define MARIO_DIE_DEFLECT_SPEED	 0.5f
@@ -107,6 +107,7 @@ class CMario : public CGameObject
 public: 
 	bool isJump = false;
 	bool isBonusvy = true;
+	bool ispressX = false;
 
 	CMario(float x = 0.0f, float y = 0.0f);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *colliable_objects = NULL);
