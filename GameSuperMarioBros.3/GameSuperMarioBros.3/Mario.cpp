@@ -33,16 +33,18 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	//	isBonusvx = false;
 	//}
 	vy += MARIO_GRAVITY*dt;
-	
+	if (isJump && vy < -0.23f)
+		isBonusvy = false;
+
 	if (state == MARIO_STATE_WALKING_RIGHT)
 	{
-		vx -= 0.2*MARIO_GRAVITY * dt;
+		vx -= 0.1*MARIO_GRAVITY * dt;
 		if (vx < 0)
 			SetState(MARIO_STATE_IDLE);
 	}
 	if (state == MARIO_STATE_WALKING_LEFT)
 	{
-		vx += 0.2*MARIO_GRAVITY * dt;
+		vx += 0.1*MARIO_GRAVITY * dt;
 		if (vx > 0)
 			SetState(MARIO_STATE_IDLE);
 	}
@@ -144,8 +146,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						SetState(MARIO_STATE_IDLE);
 					if(vx==0)
 						SetState(MARIO_STATE_IDLE);
-					if(hold_dik_s)
-						hold_dik_s = false;
+					isBonusvy = true;
 				}
 				/*else if (e->nx != 0)
 				{
@@ -216,7 +217,7 @@ void CMario::Render()
 
 	int alpha = 255;
 	if (untouchable) alpha = 128;
-	DebugOut(L"vx=%f, isJump:%d, state=%d, ani=%d\n",vx,isJump, state,ani);
+	DebugOut(L"vx=%f,vy=%f, isJump:%d, state=%d, ani=%d\n",vx,vy,isJump, state,ani);
 	animation_set->at(ani)->Render(x, y, alpha);
 
 	RenderBoundingBox();
@@ -232,13 +233,13 @@ void CMario::SetState(int state)
 	{
 	case MARIO_STATE_WALKING_RIGHT:
 		//vx = MARIO_WALKING_SPEED;
-		if (vx < 0.15)
+		if (vx < 0.1f)
 			vx += 0.005f;
 		nx = 1;
 		break;
 	case MARIO_STATE_WALKING_LEFT: 
 		//vx = -MARIO_WALKING_SPEED;
-		if (vx > -0.15)
+		if (vx > -0.1f)
 			vx -= 0.005f;
 		nx = -1;
 		break;
@@ -249,7 +250,8 @@ void CMario::SetState(int state)
 	case MARIO_STATE_JUMP_LEFT:
 	case MARIO_STATE_JUMP_RIGHT:
 		isJump = true;
-		vy = -MARIO_JUMP_SPEED_Y;
+		if (isBonusvy)
+			vy -= MARIO_JUMP_SPEED_Y;
 		break;
 	case MARIO_STATE_IDLE: 
 		vx = 0;

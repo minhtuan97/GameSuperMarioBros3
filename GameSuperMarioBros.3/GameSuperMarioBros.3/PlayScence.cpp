@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <fstream>
 
 #include "PlayScence.h"
@@ -369,18 +369,18 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
 	switch (KeyCode)
 	{
-	case DIK_S:
-		if (mario->isJump)
-			break;
-		//mario->isBonusvx = true;
-		mario->hold_dik_s_start = GetTickCount();
+	//case DIK_S:
+	//	if (mario->isJump)
+	//		break;
+	//	//mario->isBonusvx = true;
+	//	mario->hold_dik_s_start = GetTickCount64();
 
-		if (mario->nx > 0)
-			mario->SetState(MARIO_STATE_JUMP_RIGHT);
-		else
-			mario->SetState(MARIO_STATE_JUMP_LEFT);
-		//mario->SetState(MARIO_STATE_JUMP);
-		break;
+	//	if (mario->nx > 0)
+	//		mario->SetState(MARIO_STATE_JUMP_RIGHT);
+	//	else
+	//		mario->SetState(MARIO_STATE_JUMP_LEFT);
+	//	//mario->SetState(MARIO_STATE_JUMP);
+	//	break;
 	case DIK_A: 
 		mario->Reset();
 		break;
@@ -399,14 +399,20 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 	if (mario->GetState() == MARIO_STATE_DIE) return;
 	if (game->IsKeyDown(DIK_RIGHT))
 		mario->SetState(MARIO_STATE_WALKING_RIGHT);
-	else if (game->IsKeyDown(DIK_LEFT))
-		mario->SetState(MARIO_STATE_WALKING_LEFT);
 	else
-		if (!mario->isJump)
-			//mario->SetState(MARIO_STATE_IDLE);
-			;
+		if (game->IsKeyDown(DIK_LEFT))
+			mario->SetState(MARIO_STATE_WALKING_LEFT);
 		else
-			if (game->IsKeyDown(DIK_S) && mario->isJump && mario->vy < 0)
-				mario->time_hold_dik_s = GetTickCount() - mario->hold_dik_s_start;
+			if (game->IsKeyDown(DIK_S))
+				if (mario->nx > 0)
+					mario->SetState(MARIO_STATE_JUMP_RIGHT);
+				else
+					mario->SetState(MARIO_STATE_JUMP_LEFT);
+			else
+
+				if (!mario->isJump)
+					//không nhấn gì hết
+					//mario->SetState(MARIO_STATE_IDLE);
+					;
 
 }
