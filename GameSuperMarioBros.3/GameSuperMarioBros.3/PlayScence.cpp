@@ -370,19 +370,47 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	switch (KeyCode)
 	{
 	case DIK_X:
-		if (mario->isJump)
+		if (mario->isJump||mario->isjumpX)
 			break;
 		mario->ispressX = true;
+		mario->isjumpX = true;
 		if (mario->nx > 0)
 			mario->SetState(MARIO_STATE_JUMP_RIGHT);
 		else
 			mario->SetState(MARIO_STATE_JUMP_LEFT);
 		break;
-	case DIK_A: 
-		mario->Reset();
+	case DIK_S:
+		mario->isUpS = false;
 		break;
+	//case DIK_A: 
+		//mario->Reset();
+		//break;
 	case DIK_ESCAPE:
 		DestroyWindow(game->getHwnd());
+		break;
+	}
+}
+
+void CPlayScenceKeyHandler::OnKeyUp(int KeyCode) 
+{
+	CGame* game = CGame::GetInstance();
+	CMario* mario = ((CPlayScene*)scence)->GetPlayer();
+	switch (KeyCode)
+	{
+	case DIK_X:
+		mario->ispressX = false;
+		//mario->isJump = false;
+		break;
+	case DIK_S:
+	//	mario->isJump = false;
+	//	mario->isBonusvy = true;
+		//if (mario->iscanjumpS)
+		//{
+		//	mario->isBonusvy = true;
+		//	mario->iscanjumpS = false;
+		//}
+		mario->isUpS = true;
+		mario->iscanjumpS = false;
 		break;
 	}
 }
@@ -396,20 +424,19 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 	if (mario->GetState() == MARIO_STATE_DIE) return;
 	if (game->IsKeyDown(DIK_RIGHT))
 		mario->SetState(MARIO_STATE_WALKING_RIGHT);
-	else
-		if (game->IsKeyDown(DIK_LEFT))
+	else if (game->IsKeyDown(DIK_LEFT))
 			mario->SetState(MARIO_STATE_WALKING_LEFT);
+	if (game->IsKeyDown(DIK_S) && !mario->isjumpX&& mario->iscanjumpS)
+		if (mario->nx > 0)
+			mario->SetState(MARIO_STATE_JUMP_RIGHT);
 		else
-			if (game->IsKeyDown(DIK_S))
-				if (mario->nx > 0)
-					mario->SetState(MARIO_STATE_JUMP_RIGHT);
-				else
-					mario->SetState(MARIO_STATE_JUMP_LEFT);
-			else
+			mario->SetState(MARIO_STATE_JUMP_LEFT);
+	if ((game->IsKeyDown(DIK_LEFT)|| game->IsKeyDown(DIK_RIGHT)) && game->IsKeyDown(DIK_A))
+		mario->IncreasePower();
+	else
+		mario->DecreasePower();
+	DebugOut(L"power:%f\n", mario->power);
 
-				if (!mario->isJump)
-					//không nhấn gì hết
-					//mario->SetState(MARIO_STATE_IDLE);
-					;
+
 
 }

@@ -106,8 +106,14 @@ class CMario : public CGameObject
 	float start_y; 
 public: 
 	bool isJump = false;
+	bool iswalking = false;
 	bool isBonusvy = true;
 	bool ispressX = false;
+	bool isjumpX = false;
+	bool iscanjumpS = false;
+	bool isUpS = true;
+	float power = 0.0f;
+	bool isRun = false;
 
 	CMario(float x = 0.0f, float y = 0.0f);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *colliable_objects = NULL);
@@ -120,4 +126,7 @@ public:
 	void Reset();
 
 	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);
+	void DecreasePower();
+	void IncreasePower();
+
 };
