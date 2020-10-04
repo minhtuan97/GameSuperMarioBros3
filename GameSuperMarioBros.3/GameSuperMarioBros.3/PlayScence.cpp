@@ -374,10 +374,20 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 			break;
 		mario->ispressX = true;
 		mario->isjumpX = true;
-		if (mario->nx > 0)
-			mario->SetState(MARIO_STATE_JUMP_RIGHT);
+		if (mario->isRun)
+		{
+			if (mario->nx > 0)
+				mario->SetState(MARIO_STATE_JUMP_RIGHT);
+			else
+				mario->SetState(MARIO_STATE_JUMP_LEFT);
+		}
 		else
-			mario->SetState(MARIO_STATE_JUMP_LEFT);
+		{
+			if (mario->nx > 0)
+				mario->SetState(MARIO_STATE_JUMP_RIGHT);
+			else
+				mario->SetState(MARIO_STATE_JUMP_LEFT);
+		}
 		break;
 	case DIK_S:
 		mario->isUpS = false;
@@ -399,16 +409,8 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 	{
 	case DIK_X:
 		mario->ispressX = false;
-		//mario->isJump = false;
 		break;
 	case DIK_S:
-	//	mario->isJump = false;
-	//	mario->isBonusvy = true;
-		//if (mario->iscanjumpS)
-		//{
-		//	mario->isBonusvy = true;
-		//	mario->iscanjumpS = false;
-		//}
 		mario->isUpS = true;
 		mario->iscanjumpS = false;
 		break;
@@ -423,17 +425,43 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 	// disable control key when Mario die 
 	if (mario->GetState() == MARIO_STATE_DIE) return;
 	if (game->IsKeyDown(DIK_RIGHT))
-		mario->SetState(MARIO_STATE_WALKING_RIGHT);
-	else if (game->IsKeyDown(DIK_LEFT))
-			mario->SetState(MARIO_STATE_WALKING_LEFT);
-	if (game->IsKeyDown(DIK_S) && !mario->isjumpX&& mario->iscanjumpS)
-		if (mario->nx > 0)
-			mario->SetState(MARIO_STATE_JUMP_RIGHT);
+	{
+		//mario->SetState(MARIO_STATE_WALKING_RIGHT);
+		if (game->IsKeyDown(DIK_A))
+			mario->IncreasePower(); 
+		if (mario->isRun)
+				mario->SetState(MARIO_STATE_RUN_RIGHT);
 		else
-			mario->SetState(MARIO_STATE_JUMP_LEFT);
-	if ((game->IsKeyDown(DIK_LEFT)|| game->IsKeyDown(DIK_RIGHT)) && game->IsKeyDown(DIK_A))
-		mario->IncreasePower();
-	else
+				mario->SetState(MARIO_STATE_WALKING_RIGHT);
+	}
+	else if (game->IsKeyDown(DIK_LEFT))
+	{
+		//mario->SetState(MARIO_STATE_WALKING_LEFT);
+		if (game->IsKeyDown(DIK_A))
+			mario->IncreasePower();
+		if (mario->isRun)
+			mario->SetState(MARIO_STATE_RUN_LEFT);
+		else
+			mario->SetState(MARIO_STATE_WALKING_LEFT);
+	}
+	if (game->IsKeyDown(DIK_S) && !mario->isjumpX && mario->iscanjumpS)
+	{
+		if (mario->isRun)
+		{
+			if (mario->nx > 0)
+				mario->SetState(MARIO_STATE_RUNJUMP_RIGHT);
+			else
+				mario->SetState(MARIO_STATE_RUNJUMP_LEFT);
+		}
+		else
+		{
+			if (mario->nx > 0)
+				mario->SetState(MARIO_STATE_JUMP_RIGHT);
+			else
+				mario->SetState(MARIO_STATE_JUMP_LEFT);
+		}
+	}
+	if (!((game->IsKeyDown(DIK_LEFT)|| game->IsKeyDown(DIK_RIGHT)) && game->IsKeyDown(DIK_A)))
 		mario->DecreasePower();
 	DebugOut(L"power:%f\n", mario->power);
 

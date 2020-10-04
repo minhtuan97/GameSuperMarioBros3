@@ -178,14 +178,14 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 							isJump = false;
 							iswalking = true;
 							state = MARIO_STATE_WALKING_RIGHT;
-							DebugOut(L"Vao ham vx>0, state=%d\n", state);
+							//DebugOut(L"Vao ham vx>0, state=%d\n", state);
 						}
 						else if (vx < 0)
 						{
 							isJump = false;
 							iswalking = true;
 							state = MARIO_STATE_WALKING_LEFT;
-							DebugOut(L"Vao ham vx<0, state=%d\n", state);
+							//DebugOut(L"Vao ham vx<0, state=%d\n", state);
 						}
 					}
 				}
@@ -234,17 +234,28 @@ void CMario::Render()
 	{
 		if (isJump)
 		{
-			if (nx > 0)
-				ani = MARIO_ANIMATION_SMALL_JUMP_RIGHT;
-			else if (nx < 0)
-				ani = MARIO_ANIMATION_SMALL_JUMP_LEFT;
+			if (isRun)
+			{
+				if (nx > 0)
+					ani = MARIO_ANIMATION_SMALL_RUNJUMP_LEFT;
+				else if (nx < 0)
+					ani = MARIO_ANIMATION_SMALL_RUNJUMP_RIGHT;
+			}
+			else
+			{
+				if (nx > 0)
+					ani = MARIO_ANIMATION_SMALL_JUMP_RIGHT;
+				else if (nx < 0)
+					ani = MARIO_ANIMATION_SMALL_JUMP_LEFT;
+			}
 		}
 		else if (iswalking)
 		{
-			if (nx > 0)
-				ani = MARIO_ANIMATION_SMALL_WALKING_RIGHT;
-			else if (nx < 0)
-				ani = MARIO_ANIMATION_SMALL_WALKING_LEFT;
+			//if (nx > 0)
+			//	ani = MARIO_ANIMATION_SMALL_WALKING_RIGHT;
+			//else if (nx < 0)
+			//	ani = MARIO_ANIMATION_SMALL_WALKING_LEFT;
+			;
 		}
 		else if (vx == 0)
 		{
@@ -259,12 +270,21 @@ void CMario::Render()
 			ani = MARIO_ANIMATION_SMALL_WALKING_LEFT;
 		else if (state == MARIO_STATE_WALKING_RIGHT)
 			ani = MARIO_ANIMATION_SMALL_WALKING_RIGHT;
-
+		if (state == MARIO_STATE_RUN_LEFT)
+			ani = MARIO_ANIMATION_SMALL_RUN_LEFT;
+		else if (state == MARIO_STATE_RUN_RIGHT)
+			ani = MARIO_ANIMATION_SMALL_RUN_RIGHT;
+		if (state == MARIO_STATE_RUNJUMP_LEFT)
+			ani = MARIO_ANIMATION_SMALL_RUNJUMP_LEFT;
+		else if (state == MARIO_STATE_RUNJUMP_RIGHT)
+			ani = MARIO_ANIMATION_SMALL_RUNJUMP_RIGHT;
 	}
 
 	int alpha = 255;
 	if (untouchable) alpha = 128;
-	DebugOut(L"vx=%f,vy=%f, iscanjumpS=%d, ispressX=%d,isUpS=%d ,iswalking=%d, isJump:%d, state=%d, ani=%d\n",vx,vy,iscanjumpS,ispressX,isUpS ,iswalking,isJump, state,ani);
+	
+	if(state==13||state==14)
+		DebugOut(L"state=%d, ani=%d, vx=%f,vy=%f, iscanjumpS=%d, ispressX=%d,isUpS=%d ,iswalking=%d, isJump:%d\n", state, ani,vx,vy,iscanjumpS,ispressX,isUpS ,iswalking,isJump);
 	animation_set->at(ani)->Render(x, y, alpha);
 
 	RenderBoundingBox();
@@ -286,15 +306,6 @@ void CMario::SetState(int state)
 			CGameObject::SetState(state);
 		iswalking = true;
 		break;
-	case MARIO_STATE_RUN_RIGHT:
-		//vx = MARIO_WALKING_SPEED;
-		if (vx < 0.1f)
-			vx += 0.005f;
-		nx = 1;
-		if (!isJump)
-			CGameObject::SetState(state);
-		iswalking = true;
-		break;
 	case MARIO_STATE_WALKING_LEFT: 
 		//vx = -MARIO_WALKING_SPEED;
 		if (vx > -0.1f)
@@ -306,9 +317,18 @@ void CMario::SetState(int state)
 		break;
 	case MARIO_STATE_RUN_LEFT:
 		//vx = -MARIO_WALKING_SPEED;
-		if (vx > -0.1f)
-			vx -= 0.005f;
+		if (vx > -0.2f)
+			vx -= 0.01f;
 		nx = -1;
+		if (!isJump)
+			CGameObject::SetState(state);
+		iswalking = true;
+		break;
+	case MARIO_STATE_RUN_RIGHT:
+		//vx = MARIO_WALKING_SPEED;
+		if (vx < 0.2f)
+			vx += 0.01f;
+		nx = 1;
 		if (!isJump)
 			CGameObject::SetState(state);
 		iswalking = true;
@@ -321,6 +341,19 @@ void CMario::SetState(int state)
 	case MARIO_STATE_JUMP_RIGHT:
 			CGameObject::SetState(state);
 		isJump = true;		
+		if (ispressX == true)
+			vy = -0.23f;
+		else
+			if (isBonusvy)
+			{
+				vy -= MARIO_JUMP_SPEED_Y;
+			}
+		iswalking = false;
+		break;
+	case MARIO_STATE_RUNJUMP_LEFT:
+	case MARIO_STATE_RUNJUMP_RIGHT:
+		CGameObject::SetState(state);
+		isJump = true;
 		if (ispressX == true)
 			vy = -0.23f;
 		else
@@ -374,17 +407,18 @@ void CMario::DecreasePower()
 
 void CMario::IncreasePower()
 {
-	if (power < 100)
+	if (power < 90)
 		power += 1.0f;
 	if (power >= 70)
 		isRun = true;
-	if (isRun)
-	{
-		if (nx > 0)
-			SetState(MARIO_STATE_RUN_RIGHT);
-		else if (nx < 0)
-			SetState(MARIO_STATE_RUN_LEFT);
-	}
+	//if (isRun)
+	//{
+	//	if (nx > 0)
+	//		SetState(MARIO_STATE_RUN_RIGHT);
+	//	else if (nx < 0)
+	//		SetState(MARIO_STATE_RUN_LEFT);
+	//}
+
 }
 
 /*
