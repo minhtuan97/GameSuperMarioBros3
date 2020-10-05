@@ -426,6 +426,11 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 	if (mario->GetState() == MARIO_STATE_DIE) return;
 	if (game->IsKeyDown(DIK_RIGHT))
 	{
+		if (mario->state == MARIO_STATE_WALKING_LEFT)
+		{
+			mario->isSkid = true;
+			mario->skid_start = GetTickCount64();
+		}
 		//mario->SetState(MARIO_STATE_WALKING_RIGHT);
 		if (game->IsKeyDown(DIK_A))
 			mario->IncreasePower(); 
@@ -436,6 +441,11 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 	}
 	else if (game->IsKeyDown(DIK_LEFT))
 	{
+		if (mario->state == MARIO_STATE_WALKING_RIGHT)
+		{
+			mario->isSkid = true;
+			mario->skid_start = GetTickCount64();
+		}
 		//mario->SetState(MARIO_STATE_WALKING_LEFT);
 		if (game->IsKeyDown(DIK_A))
 			mario->IncreasePower();
@@ -443,6 +453,7 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 			mario->SetState(MARIO_STATE_RUN_LEFT);
 		else
 			mario->SetState(MARIO_STATE_WALKING_LEFT);
+
 	}
 	if (game->IsKeyDown(DIK_S) && !mario->isjumpX && mario->iscanjumpS)
 	{

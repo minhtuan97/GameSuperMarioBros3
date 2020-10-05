@@ -94,6 +94,7 @@
 #define MARIO_SMALL_BBOX_HEIGHT 16
 
 #define MARIO_UNTOUCHABLE_TIME 5000
+#define MARIO_SKID_TIME 200
 
 
 class CMario : public CGameObject
@@ -105,6 +106,9 @@ class CMario : public CGameObject
 	float start_x;			// initial position of Mario at scene
 	float start_y; 
 public: 
+	DWORD skid_start;
+
+
 	bool isJump = false;
 	bool iswalking = false;
 	bool isBonusvy = true;
@@ -114,6 +118,7 @@ public:
 	bool isUpS = true;
 	float power = 0.0f;
 	bool isRun = false;
+	bool isSkid = false;
 
 	CMario(float x = 0.0f, float y = 0.0f);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *colliable_objects = NULL);

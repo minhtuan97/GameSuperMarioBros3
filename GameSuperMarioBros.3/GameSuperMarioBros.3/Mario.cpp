@@ -41,14 +41,14 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		{//if (state == MARIO_STATE_WALKING_RIGHT)
 			if (nx > 0)
 			{
-				vx -= 0.1 * MARIO_GRAVITY * dt;
+				vx -= 0.2 * MARIO_GRAVITY * dt;
 				if (vx < 0)
 					SetState(MARIO_STATE_IDLE);
 			}
 			//if (state == MARIO_STATE_WALKING_LEFT)
 			if (nx < 0)
 			{
-				vx += 0.1 * MARIO_GRAVITY * dt;
+				vx += 0.2 * MARIO_GRAVITY * dt;
 				if (vx > 0)
 					SetState(MARIO_STATE_IDLE);
 			}
@@ -69,6 +69,11 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	{
 		untouchable_start = 0;
 		untouchable = 0;
+	}
+	if (GetTickCount64() - skid_start > MARIO_SKID_TIME)
+	{
+		skid_start = 0;
+		isSkid = false;
 	}
 
 	// No collision occured, proceed normally
@@ -278,6 +283,13 @@ void CMario::Render()
 			ani = MARIO_ANIMATION_SMALL_RUNJUMP_LEFT;
 		else if (state == MARIO_STATE_RUNJUMP_RIGHT)
 			ani = MARIO_ANIMATION_SMALL_RUNJUMP_RIGHT;
+		if (isSkid)
+		{
+			if (nx < 0)
+				ani = MARIO_ANIMATION_SMALL_SKID_RIGHT;
+			else if (nx > 0)
+				ani = MARIO_STATE_SKID_LEFT;
+		}
 	}
 
 	int alpha = 255;
