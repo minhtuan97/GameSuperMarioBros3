@@ -202,6 +202,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		item->id= atof(tokens[5].c_str());
 		item->xde = x;
 		item->yde = y;
+		objects_item.push_back(obj);
 		break;
 	}
 	case OBJECT_TYPE_KOOPAS: obj = new CKoopas(); break;
@@ -224,7 +225,17 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	LPANIMATION_SET ani_set = animation_sets->Get(ani_set_id);
 
 	obj->SetAnimationSet(ani_set);
-	objects.push_back(obj);
+	grid = Grid::GetInstance();
+	try
+	{
+		if (obj != NULL && !dynamic_cast<CMario*>(obj)&&!dynamic_cast<Item*>(obj))
+			grid->addObject(obj);
+	}
+	catch (const std::exception& e)
+	{
+		DebugOut(L"loi %s\n", e);
+	}
+	//objects.push_back(obj);
 }
 
 void CPlayScene::_ParseSection_MAP(string line)
@@ -297,10 +308,11 @@ void CPlayScene::Update(DWORD dt)
 	// TO-DO: This is a "dirty" way, need a more organized way 
 
 	vector<LPGAMEOBJECT> coObjects;
-	for (size_t i = 1; i < objects.size(); i++)
-	{
-		coObjects.push_back(objects[i]);
-	}
+	//for (size_t i = 1; i < objects.size(); i++)
+	//{
+	//	coObjects.push_back(objects[i]);
+	//}
+	grid->GetListOfObjects(&coObjects);
 
 	for (size_t i = 0; i < objects.size(); i++)
 	{
@@ -309,16 +321,30 @@ void CPlayScene::Update(DWORD dt)
 
 	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
 	if (player == NULL) return; 
+	player->Update(dt, &coObjects);
 
-	//// Update camera to follow mario
-	//float cx, cy;
-	//player->GetPosition(cx, cy);
-
-	//CGame *game = CGame::GetInstance();
-	//cx -= game->GetScreenWidth() / 2;
-	//cy -= game->GetScreenHeight() / 2;
-
-	//CGame::GetInstance()->SetCamPos((int)cx, (int)30.0f /*cy*/);
+	//add item vao grid
+	for (int i = 0; i < objects.size(); i++)
+	{
+		if (dynamic_cast<QuestionBrick*>(objects.at(i)))
+		{
+			QuestionBrick* brick = dynamic_cast<QuestionBrick*>(objects.at(i));
+			if (brick->isColi&&!brick->isAddItem)
+			{
+				for (int m = 0; m < objects_item.size(); m++)
+				{
+					Item* item = dynamic_cast<Item*>(objects_item.at(m));
+					if (item->id == brick->iditem)
+					{
+						item->SetSpeed(0, -0.3);
+						grid->addObject(item);
+						brick->isAddItem = true;
+					}
+				}
+			}
+		}
+			
+	}
 
 	// Update camera to follow mario
 	float cx, cy, mapheight, mapwidth;
@@ -380,9 +406,14 @@ void CPlayScene::Update(DWORD dt)
 void CPlayScene::Render()
 {
 	map->DrawMap();
-
+	grid->GetListOfObjects(&objects);
 	for (int i = 0; i < objects.size(); i++)
-		objects[i]->Render();
+	{
+			objects[i]->Render();
+	}
+
+	if (player)
+		player->Render();
 }
 
 /*

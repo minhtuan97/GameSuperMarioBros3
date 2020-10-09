@@ -19,6 +19,7 @@ void QuestionBrick::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 void QuestionBrick::Render()
 {
 	animation_set->at(1)->Render(x, y);
+	RenderBoundingBox();
 }
 
 void QuestionBrick::GetBoundingBox(float& l, float& t, float& r, float& b)

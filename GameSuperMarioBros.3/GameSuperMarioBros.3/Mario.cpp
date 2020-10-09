@@ -270,8 +270,13 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				}
 				else if (e->ny > 0)
 				{
-					brick->isColi = true;
+					if (!brick->isColi)
+					{
+						brick->isColi = true;
+						money++;
+					}
 					brick->SetSpeed(0,-0.15);
+					isBonusvy = false;
 				}
 			}
 			if (dynamic_cast<Box*>(e->obj))//if Box
@@ -400,17 +405,18 @@ void CMario::Render()
 		if (isSkid)
 		{
 			if (nx < 0)
-				ani = MARIO_ANIMATION_SMALL_SKID_RIGHT;
+				ani = MARIO_ANIMATION_SMALL_SKID_LEFT;
 			else if (nx > 0)
-				ani = MARIO_STATE_SKID_LEFT;
+				ani = MARIO_ANIMATION_SMALL_SKID_RIGHT;
 		}
 	}
 
 	int alpha = 255;
 	if (untouchable) alpha = 128;
 	
-	if(state==13||state==14)
-		DebugOut(L"state=%d, ani=%d, vx=%f,vy=%f, iscanjumpS=%d, ispressX=%d,isUpS=%d ,iswalking=%d, isJump:%d\n", state, ani,vx,vy,iscanjumpS,ispressX,isUpS ,iswalking,isJump);
+	//if(state==13||state==14)
+		//DebugOut(L"state=%d, ani=%d, vx=%f,vy=%f, iscanjumpS=%d, ispressX=%d,isUpS=%d ,iswalking=%d, isJump:%d\n", state, ani,vx,vy,iscanjumpS,ispressX,isUpS ,iswalking,isJump);
+	DebugOut(L"money:%d\n", money);
 	animation_set->at(ani)->Render(x, y, alpha);
 
 	RenderBoundingBox();

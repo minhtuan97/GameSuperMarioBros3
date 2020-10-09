@@ -45,10 +45,17 @@ Grid::~Grid()
 
 void Grid::addObject(LPGAMEOBJECT object)
 {
-	int cell_x = floor((float)object->x / cellwidth);
-	int cell_y = floor((float)object->y / cellheight);
+	float left, top, right, bot;
+	object->GetBoundingBox(left, top, right, bot);
 
-	cells[cell_x][cell_y].add(object);
+	int cell_x_start = floor(left / cellwidth);
+	int cell_x_end = floor(right / cellwidth);
+	int cell_y_start = floor(top / cellheight);
+	int cell_y_end = floor(bot / cellheight);
+
+	for(int i= cell_x_start;i<= cell_x_end;i++)
+		for(int j= cell_y_start;j<=cell_y_end;j++)
+			cells[i][j].add(object);
 
 	//DebugOut(L"cell_x: %d, cell_y: %d\n", cell_x, cell_y);
 	//if (dynamic_cast<Torch*>(object))
@@ -84,10 +91,14 @@ void Grid::GetListOfObjects(vector<LPGAMEOBJECT>* list_object)
 				{
 					for (k = 0; k < cells[i][j].GetlistObject().size(); k++)
 					{
+						bool check = true;
 						//DebugOut(L"i:%d, j:%d, k:%d, size:%d \n", i, j, k, cells[i][j].GetlistObject().size());
-						LPGAMEOBJECT e;
-						e = cells[i][j].GetlistObject().at(k);
-						list_object->push_back(e);
+						LPGAMEOBJECT e = cells[i][j].GetlistObject().at(k);
+						for (int m = 0; m < list_object->size(); m++)
+							if (list_object->at(m) == e)
+								check = false;
+						if(check)
+							list_object->push_back(e);
 					}
 				}
 			}
@@ -126,8 +137,8 @@ void Grid::deleteObject(LPGAMEOBJECT object)
 	//}
 	//else
 	//{
-	//	cell_x = floor((float)object->x / cellwidth);
-	//	cell_y = floor((float)object->y / cellheight);
+		cell_x = floor((float)object->x / cellwidth);
+		cell_y = floor((float)object->y / cellheight);
 	//}
 	cells[cell_x][cell_y].earseObj(object);
 

@@ -101,6 +101,7 @@ class CMario : public CGameObject
 {
 	int level;
 	int untouchable;
+	int money = 0;
 	DWORD untouchable_start;
 
 	float start_x;			// initial position of Mario at scene

@@ -1,8 +1,9 @@
 #include "Item.h"
 #include"define.h"
 #include "Brick.h"
+#include "Grid.h"
 
-#define	GOlDEN_GRAVITY	0.01f
+#define	GOlDEN_GRAVITY	0.001f
 
 Item::Item():CGameObject()
 {
@@ -25,6 +26,7 @@ void Item::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 
 void Item::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
+	Grid* grid = Grid::GetInstance();
 	switch (type)
 	{
 	case 0:
@@ -35,6 +37,7 @@ void Item::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		{
 			SetPosition(xde, yde);
 			SetSpeed(0, 0);
+			grid->deleteObject(this);
 		}
 		break;
 	default:

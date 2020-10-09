@@ -10,16 +10,19 @@
 #include "Map.h"
 #include "Camera.h"
 #include "define.h"
-
+#include "Grid.h"
 
 class CPlayScene: public CScene
 {
 protected: 
 	Map* map;
+	Grid* grid;
 	Camera* cam;
 	CMario *player;					// A play scene has to have player, right? 
 
-	vector<LPGAMEOBJECT> objects;
+	vector<LPGAMEOBJECT> objects;	
+	vector<LPGAMEOBJECT> objects_item;
+
 
 	void _ParseSection_TEXTURES(string line);
 	void _ParseSection_SPRITES(string line);
