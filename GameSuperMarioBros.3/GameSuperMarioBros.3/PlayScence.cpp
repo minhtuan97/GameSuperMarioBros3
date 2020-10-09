@@ -6,6 +6,9 @@
 #include "Textures.h"
 #include "Sprites.h"
 #include "Portal.h"
+#include "Box.h"
+#include "QuestionBrick.h"
+#include "Item.h"
 
 using namespace std;
 
@@ -34,6 +37,9 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define OBJECT_TYPE_BRICK	1
 #define OBJECT_TYPE_GOOMBA	2
 #define OBJECT_TYPE_KOOPAS	3
+#define OBJECT_TYPE_BOX		4
+#define OBJECT_TYPE_QUESTIONBRICK	5
+#define	OBJECT_TYPE_ITEM	6
 
 #define OBJECT_TYPE_PORTAL	50
 
@@ -160,14 +166,44 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_BRICK: 
 	{
 		obj = new CBrick();
-		int w = atof(tokens[4].c_str());
-		int h = atof(tokens[5].c_str());
+		int r = atof(tokens[4].c_str());
+		int b = atof(tokens[5].c_str());
+		int type = atof(tokens[5].c_str());
 		CBrick* brick=(CBrick*)obj;
-		brick->width = w;
-		brick->height = h;
+		brick->right = r;
+		brick->bot = b;
+		brick->type = type;
 		break;
 	}
-
+	case OBJECT_TYPE_BOX:
+	{
+		obj = new Box();
+		int r = atof(tokens[4].c_str());
+		int b = atof(tokens[5].c_str());
+		Box* brick = (Box*)obj;
+		brick->right = r;
+		brick->bot = b;
+		break;
+	}
+	case OBJECT_TYPE_QUESTIONBRICK:
+	{
+		obj = new QuestionBrick(); 
+		QuestionBrick* brick = (QuestionBrick*)obj;
+		brick->iditem = atof(tokens[4].c_str());
+		brick->xde = x;
+		brick->yde = y;
+		break;
+	}
+	case OBJECT_TYPE_ITEM:
+	{
+		obj = new Item();
+		Item* item = (Item*)obj;
+		item->type= atof(tokens[4].c_str());
+		item->id= atof(tokens[5].c_str());
+		item->xde = x;
+		item->yde = y;
+		break;
+	}
 	case OBJECT_TYPE_KOOPAS: obj = new CKoopas(); break;
 	case OBJECT_TYPE_PORTAL:
 		{	
@@ -320,6 +356,7 @@ void CPlayScene::Update(DWORD dt)
 	}
 	if (cy < 0) cy = 0;
 	cam->SetCameraPosition((int)cx, (int)cy);
+	//cam->SetCameraPosition(1240, 0);
 
 	//for (size_t i = 0; i < objects.size(); i++)
 	//{

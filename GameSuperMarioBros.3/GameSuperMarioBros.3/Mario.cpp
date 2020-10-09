@@ -8,6 +8,8 @@
 #include "Goomba.h"
 #include "Portal.h"
 #include "Brick.h"
+#include "QuestionBrick.h"
+#include "Box.h"
 
 CMario::CMario(float x, float y) : CGameObject()
 {
@@ -32,27 +34,44 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 	if (!ispressX)
 	{
-		if (isJump && vy < -0.27f)
+		if (isJump && vy < -0.3f)
 		{
 			isBonusvy = false;
-			vy = -0.27f;
+			vy = -0.28f;
 		}
 		if (iswalking)
 		{//if (state == MARIO_STATE_WALKING_RIGHT)
 			if (nx > 0)
 			{
-				vx -= 0.2 * MARIO_GRAVITY * dt;
+				vx -= 0.15 * MARIO_GRAVITY * dt;
 				if (vx < 0)
 					SetState(MARIO_STATE_IDLE);
 			}
 			//if (state == MARIO_STATE_WALKING_LEFT)
 			if (nx < 0)
 			{
-				vx += 0.2 * MARIO_GRAVITY * dt;
+				vx += 0.15 * MARIO_GRAVITY * dt;
 				if (vx > 0)
 					SetState(MARIO_STATE_IDLE);
 			}
 		}
+	}
+
+	vector<LPGAMEOBJECT> listbox;
+	vector<LPGAMEOBJECT> listbrick;
+	vector<LPGAMEOBJECT> listquestionbrick;
+	listbox.clear();
+	listbrick.clear();
+	listquestionbrick.clear();
+
+	for (int i = 0; i < coObjects->size(); i++)
+	{
+		if (dynamic_cast<Box*>(coObjects->at(i)))
+			listbox.push_back(coObjects->at(i));
+		if (dynamic_cast<CBrick*>(coObjects->at(i)))
+			listbrick.push_back(coObjects->at(i)); 
+		if (dynamic_cast<QuestionBrick*>(coObjects->at(i)))
+			listquestionbrick.push_back(coObjects->at(i));
 	}
 
 	vector<LPCOLLISIONEVENT> coEvents;
@@ -61,8 +80,13 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	coEvents.clear();
 
 	// turn off collision when die 
-	if (state!=MARIO_STATE_DIE)
-		CalcPotentialCollisions(coObjects, coEvents);
+	if (state != MARIO_STATE_DIE)
+	{
+		if(!(isJump&&vy<0))
+			CalcPotentialCollisions(&listbox, coEvents);
+		CalcPotentialCollisions(&listbrick, coEvents);
+		CalcPotentialCollisions(&listquestionbrick, coEvents);
+	}
 
 	// reset untouchable timer if untouchable time has passed
 	if ( GetTickCount64() - untouchable_start > MARIO_UNTOUCHABLE_TIME) 
@@ -194,23 +218,113 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 						}
 					}
 				}
-				/*else if (e->nx != 0)
+			}
+			if (dynamic_cast<QuestionBrick*>(e->obj))//if question brick
+			{
+				QuestionBrick* brick = dynamic_cast<QuestionBrick*>(e->obj);
+
+				// jump on top >> kill Goomba and deflect a bit 
+				if (e->ny < 0)
 				{
-					if (untouchable == 0)
+					if (ispressX)
 					{
-						if (goomba->GetState() != GOOMBA_STATE_DIE)
+						if (this->nx > 0)
+							SetState(MARIO_STATE_JUMP_RIGHT);
+						else
+							SetState(MARIO_STATE_JUMP_LEFT);
+					}
+					else
+					{
+						isjumpX = false;
+						if (vx == 0)
+							SetState(MARIO_STATE_IDLE);
+					}
+
+					if (isUpS)
+					{
+						iscanjumpS = true;
+						isBonusvy = true;
+					}
+					else
+					{
+						iscanjumpS = false;
+						isBonusvy = false;
+					}
+					if (!isjumpX)
+					{
+						if (vx > 0)
 						{
-							if (level > MARIO_LEVEL_SMALL)
-							{
-								level = MARIO_LEVEL_SMALL;
-								StartUntouchable();
-							}
-							else
-								SetState(MARIO_STATE_DIE);
+							isJump = false;
+							iswalking = true;
+							state = MARIO_STATE_WALKING_RIGHT;
+							//DebugOut(L"Vao ham vx>0, state=%d\n", state);
+						}
+						else if (vx < 0)
+						{
+							isJump = false;
+							iswalking = true;
+							state = MARIO_STATE_WALKING_LEFT;
+							//DebugOut(L"Vao ham vx<0, state=%d\n", state);
 						}
 					}
-				}*/
+				}
+				else if (e->ny > 0)
+				{
+					brick->isColi = true;
+					brick->SetSpeed(0,-0.15);
+				}
 			}
+			if (dynamic_cast<Box*>(e->obj))//if Box
+			{
+				Box* brick = dynamic_cast<Box*>(e->obj);
+
+				// jump on top >> kill Goomba and deflect a bit 
+				if (e->ny < 0)
+				{
+					if (ispressX)
+					{
+						if (this->nx > 0)
+							SetState(MARIO_STATE_JUMP_RIGHT);
+						else
+							SetState(MARIO_STATE_JUMP_LEFT);
+					}
+					else
+					{
+						isjumpX = false;
+						if (vx == 0)
+							SetState(MARIO_STATE_IDLE);
+					}
+
+					if (isUpS)
+					{
+						iscanjumpS = true;
+						isBonusvy = true;
+					}
+					else
+					{
+						iscanjumpS = false;
+						isBonusvy = false;
+					}
+					if (!isjumpX)
+					{
+						if (vx > 0)
+						{
+							isJump = false;
+							iswalking = true;
+							state = MARIO_STATE_WALKING_RIGHT;
+							//DebugOut(L"Vao ham vx>0, state=%d\n", state);
+						}
+						else if (vx < 0)
+						{
+							isJump = false;
+							iswalking = true;
+							state = MARIO_STATE_WALKING_LEFT;
+							//DebugOut(L"Vao ham vx<0, state=%d\n", state);
+						}
+					}
+				}
+			}
+			
 		}
 
 	}
