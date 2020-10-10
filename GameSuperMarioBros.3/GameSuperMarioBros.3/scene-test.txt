@@ -181,7 +181,7 @@ ani_id	sprite1_id	time1	sprite2_id	time2
 10026	20035	100
 
 #Question Brick
-30001	30001	100						
+30001	30001	100
 30002	30002	500	30003	200	30004	200	30005	200
 
 #cloud
@@ -266,6 +266,15 @@ ani_id	sprite1_id	time1	sprite2_id	time2
 6	222	278	25	0	3
 6	414	296	25	0	4
 6	702	326	25	0	5
+
+#WaterPipe
+7	352	368	0	383	416
+7	1792	384	0	1824	416
+7	1856	368	0	1888	416
+7	2255	112	0	2286	304
+7	2256	384	0	2285	416
+7	2320	384	0	2349	416
+
 
 # --- SCENE PORTAL ----
 # type	l	t	ani_set_id	r	b	scene_id

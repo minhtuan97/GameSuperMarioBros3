@@ -9,6 +9,7 @@
 #include "Box.h"
 #include "QuestionBrick.h"
 #include "Item.h"
+#include "WaterPipe.h"
 
 using namespace std;
 
@@ -40,6 +41,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define OBJECT_TYPE_BOX		4
 #define OBJECT_TYPE_QUESTIONBRICK	5
 #define	OBJECT_TYPE_ITEM	6
+#define	OBJECT_TYPE_WATERPIPE	7
 
 #define OBJECT_TYPE_PORTAL	50
 
@@ -192,6 +194,17 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		brick->iditem = atof(tokens[4].c_str());
 		brick->xde = x;
 		brick->yde = y;
+		break;
+	}
+	case OBJECT_TYPE_WATERPIPE:
+	{
+		obj = new WaterPipe();
+		int r = atof(tokens[4].c_str());
+		int b = atof(tokens[5].c_str());
+		//int type = atof(tokens[6].c_str());
+		WaterPipe* p = (WaterPipe*)obj;
+		p->right = r;
+		p->bot = b;
 		break;
 	}
 	case OBJECT_TYPE_ITEM:

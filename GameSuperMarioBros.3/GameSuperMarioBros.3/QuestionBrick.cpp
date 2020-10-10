@@ -18,8 +18,13 @@ void QuestionBrick::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 void QuestionBrick::Render()
 {
-	animation_set->at(1)->Render(x, y);
-	RenderBoundingBox();
+	int ani = -1;
+	if (!isColi)
+		ani = 1;
+	else
+		ani = 0;
+	animation_set->at(ani)->Render(x, y);
+	//RenderBoundingBox();
 }
 
 void QuestionBrick::GetBoundingBox(float& l, float& t, float& r, float& b)

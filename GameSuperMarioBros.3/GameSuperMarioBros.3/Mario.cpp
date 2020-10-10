@@ -10,6 +10,7 @@
 #include "Brick.h"
 #include "QuestionBrick.h"
 #include "Box.h"
+#include "WaterPipe.h"
 
 CMario::CMario(float x, float y) : CGameObject()
 {
@@ -60,6 +61,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	vector<LPGAMEOBJECT> listbox;
 	vector<LPGAMEOBJECT> listbrick;
 	vector<LPGAMEOBJECT> listquestionbrick;
+	vector<LPGAMEOBJECT> listwaterpipe;
 	listbox.clear();
 	listbrick.clear();
 	listquestionbrick.clear();
@@ -72,6 +74,8 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			listbrick.push_back(coObjects->at(i)); 
 		if (dynamic_cast<QuestionBrick*>(coObjects->at(i)))
 			listquestionbrick.push_back(coObjects->at(i));
+		if (dynamic_cast<WaterPipe*>(coObjects->at(i)))
+			listwaterpipe.push_back(coObjects->at(i));
 	}
 
 	vector<LPCOLLISIONEVENT> coEvents;
@@ -86,6 +90,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			CalcPotentialCollisions(&listbox, coEvents);
 		CalcPotentialCollisions(&listbrick, coEvents);
 		CalcPotentialCollisions(&listquestionbrick, coEvents);
+		CalcPotentialCollisions(&listwaterpipe, coEvents);
 	}
 
 	// reset untouchable timer if untouchable time has passed
@@ -274,14 +279,64 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 					{
 						brick->isColi = true;
 						money++;
+						brick->SetSpeed(0, -0.15);
 					}
-					brick->SetSpeed(0,-0.15);
 					isBonusvy = false;
 				}
 			}
 			if (dynamic_cast<Box*>(e->obj))//if Box
 			{
 				Box* brick = dynamic_cast<Box*>(e->obj);
+
+				// jump on top >> kill Goomba and deflect a bit 
+				if (e->ny < 0)
+				{
+					if (ispressX)
+					{
+						if (this->nx > 0)
+							SetState(MARIO_STATE_JUMP_RIGHT);
+						else
+							SetState(MARIO_STATE_JUMP_LEFT);
+					}
+					else
+					{
+						isjumpX = false;
+						if (vx == 0)
+							SetState(MARIO_STATE_IDLE);
+					}
+
+					if (isUpS)
+					{
+						iscanjumpS = true;
+						isBonusvy = true;
+					}
+					else
+					{
+						iscanjumpS = false;
+						isBonusvy = false;
+					}
+					if (!isjumpX)
+					{
+						if (vx > 0)
+						{
+							isJump = false;
+							iswalking = true;
+							state = MARIO_STATE_WALKING_RIGHT;
+							//DebugOut(L"Vao ham vx>0, state=%d\n", state);
+						}
+						else if (vx < 0)
+						{
+							isJump = false;
+							iswalking = true;
+							state = MARIO_STATE_WALKING_LEFT;
+							//DebugOut(L"Vao ham vx<0, state=%d\n", state);
+						}
+					}
+				}
+			}
+			if (dynamic_cast<WaterPipe*>(e->obj))
+			{
+				//Box* brick = dynamic_cast<Box*>(e->obj);
 
 				// jump on top >> kill Goomba and deflect a bit 
 				if (e->ny < 0)
