@@ -350,6 +350,7 @@ void CPlayScene::Update(DWORD dt)
 					if (item->id == brick->iditem)
 					{
 						item->SetSpeed(0, -0.3);
+						if (item->type == 1)item->SetSpeed(0, -0.02);
 						grid->addObject(item);
 						brick->isAddItem = true;
 					}
