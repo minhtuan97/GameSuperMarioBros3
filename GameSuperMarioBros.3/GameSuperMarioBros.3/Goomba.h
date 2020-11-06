@@ -20,6 +20,7 @@ class CGoomba : public CGameObject
 	virtual void Render();
 
 public: 	
+	
 	CGoomba();
 	virtual void SetState(int state);
 };

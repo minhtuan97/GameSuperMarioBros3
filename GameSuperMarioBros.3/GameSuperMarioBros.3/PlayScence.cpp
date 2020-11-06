@@ -159,12 +159,16 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			DebugOut(L"[ERROR] MARIO object was created before!\n");
 			return;
 		}
-		obj = new CMario(x,y); 
+		//obj = new CMario(x,y); 
+		obj = CMario::GetInstance();
+		obj->SetPosition(x, y);
 		player = (CMario*)obj;  
 
 		DebugOut(L"[INFO] Player object created!\n");
 		break;
-	case OBJECT_TYPE_GOOMBA: obj = new CGoomba(); break;
+	case OBJECT_TYPE_GOOMBA: 
+		obj = new CGoomba();
+		break;
 	case OBJECT_TYPE_BRICK: 
 	{
 		obj = new CBrick();
@@ -218,7 +222,16 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		objects_item.push_back(obj);
 		break;
 	}
-	case OBJECT_TYPE_KOOPAS: obj = new CKoopas(); break;
+	case OBJECT_TYPE_KOOPAS: 
+	{
+		obj = new CKoopas();
+		float xmin = atof(tokens[4].c_str());
+		float xmax = atof(tokens[5].c_str());
+		CKoopas* k = (CKoopas*)obj;
+		k->x_min = xmin;
+		k->x_max = xmax;
+		break;
+	}
 	case OBJECT_TYPE_PORTAL:
 		{	
 			float r = atof(tokens[4].c_str());
@@ -350,7 +363,7 @@ void CPlayScene::Update(DWORD dt)
 					if (item->id == brick->iditem)
 					{
 						item->SetSpeed(0, -0.3);
-						if (item->type == 1)item->SetSpeed(0, -0.02);
+						if (item->type == 1)item->SetSpeed(0, -0.01);
 						grid->addObject(item);
 						brick->isAddItem = true;
 					}
@@ -439,7 +452,7 @@ void CPlayScene::Unload()
 		delete objects[i];
 
 	objects.clear();
-	player = NULL;
+	//player = NULL;
 
 	DebugOut(L"[INFO] Scene %s unloaded! \n", sceneFilePath);
 }
@@ -492,6 +505,15 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 	case DIK_X:
 		mario->ispressX = false;
 		break;
+	case DIK_A:
+		mario->SetState(MARIO_STATE_IDLE);
+		if (mario->rua)
+		{
+			mario->rua->ishold = false;
+			mario->rua->SetState(KOOPAS_STATE_KICK);
+			mario->rua == NULL;
+		}
+		break;
 	case DIK_S:
 		mario->isUpS = true;
 		mario->iscanjumpS = false;
@@ -513,13 +535,19 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 			mario->isSkid = true;
 			mario->skid_start = GetTickCount64();
 		}
-		//mario->SetState(MARIO_STATE_WALKING_RIGHT);
+		mario->SetState(MARIO_STATE_WALKING_RIGHT);
 		if (game->IsKeyDown(DIK_A))
-			mario->IncreasePower(); 
+		{
+			mario->IncreasePower();			
+		}
 		if (mario->isRun)
+		{
+			if (mario->GetState() == MARIO_STATE_WALKING_RIGHT);
 				mario->SetState(MARIO_STATE_RUN_RIGHT);
-		else
-				mario->SetState(MARIO_STATE_WALKING_RIGHT);
+		}
+			
+
+		
 	}
 	else if (game->IsKeyDown(DIK_LEFT))
 	{
@@ -528,15 +556,19 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 			mario->isSkid = true;
 			mario->skid_start = GetTickCount64();
 		}
-		//mario->SetState(MARIO_STATE_WALKING_LEFT);
+		mario->SetState(MARIO_STATE_WALKING_LEFT);
 		if (game->IsKeyDown(DIK_A))
+		{
 			mario->IncreasePower();
-		if (mario->isRun)
-			mario->SetState(MARIO_STATE_RUN_LEFT);
-		else
-			mario->SetState(MARIO_STATE_WALKING_LEFT);
+		}
 
+		if (mario->isRun)
+		{
+			if(mario->GetState()== MARIO_STATE_WALKING_LEFT)
+				mario->SetState(MARIO_STATE_RUN_LEFT);
+		}
 	}
+	//nut s
 	if (game->IsKeyDown(DIK_S) && !mario->isjumpX && mario->iscanjumpS)
 	{
 		if (mario->isRun)
@@ -556,8 +588,27 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 	}
 	if (!((game->IsKeyDown(DIK_LEFT)|| game->IsKeyDown(DIK_RIGHT)) && game->IsKeyDown(DIK_A)))
 		mario->DecreasePower();
-	DebugOut(L"power:%f\n", mario->power);
-
-
+	//DebugOut(L"power:%f\n", mario->power);
+	//nut A
+	if (game->IsKeyDown(DIK_A))
+	{
+		mario->iscanHold = true;
+		if (mario->isColiWithKoopas)
+		{
+			DebugOut(L"Vao ham hold\n");
+			if (!mario->isHold)
+			{
+				mario->isHold = true;
+				mario->hold_start = GetTickCount64();
+				DebugOut(L"vao ham gettickcount\n");
+			}
+			mario->rua->ishold = true;
+		}
+	}
+	else
+	{
+		mario->iscanHold = false;
+		mario->isHold = false;		
+	}
 
 }

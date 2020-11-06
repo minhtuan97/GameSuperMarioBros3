@@ -1,4 +1,5 @@
 #include "Goomba.h"
+#include "Grid.h"
 CGoomba::CGoomba()
 {
 	SetState(GOOMBA_STATE_WALKING);
@@ -27,13 +28,14 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	x += dx;
 	y += dy;
 
-	if (vx < 0 && x < 0) {
-		x = 0; vx = -vx;
-	}
+	//if (vx < 0 && x < 0) {
+	//	x = 0; vx = -vx;
+	//}
 
-	if (vx > 0 && x > 290) {
-		x = 290; vx = -vx;
-	}
+	//if (vx > 0 && x > 290) {
+	//	x = 290; vx = -vx;
+	//}
+	Grid::GetInstance()->Update(this);
 }
 
 void CGoomba::Render()

@@ -3,6 +3,8 @@
 #include "Brick.h"
 #include "Grid.h"
 #include "Box.h"
+#include "WaterPipe.h"
+#include "Utils.h"
 
 #define	GOlDEN_GRAVITY	0.001f
 #define TYPE_GOLDEN	0
@@ -30,6 +32,7 @@ void Item::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 
 void Item::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
+
 	Grid* grid = Grid::GetInstance();
 	switch (type)
 	{
@@ -45,94 +48,74 @@ void Item::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		}
 		break;
 	case TYPE_NAM:
+	{
 		CGameObject::Update(dt);
-		//vy += GOlDEN_GRAVITY * dt;
-		//y += dy;
-		//x += dx;
 		if (y < yde - 16)
 		{
 			vx = 0.05f;
-			vy = 0.05;
 		}
+		if (vx != 0)
+			vy += 0.3*GOlDEN_GRAVITY * dt;
 		/*if (y > yde)
 		{
 			SetPosition(xde, yde);
 			SetSpeed(0, 0);
 			grid->deleteObject(this);
 		}*/
-		//vector<LPCOLLISIONEVENT> coEvents;
-		//vector<LPCOLLISIONEVENT> coEventsResult;
+		vector<LPCOLLISIONEVENT> coEvents;
+		vector<LPCOLLISIONEVENT> coEventsResult;
 
-		//coEvents.clear();
-		//CalcPotentialCollisions(coObjects, coEvents);
-		//// No collision occured, proceed normally
-		//if (coEvents.size() == 0)
-		//{
-		//	x += dx;
-		//	y += dy;
-		//}
-		//else
-		//{
-		//	float min_tx, min_ty, nx = 0, ny;
-		//	float rdx = 0;
-		//	float rdy = 0;
+		coEvents.clear();
+		CalcPotentialCollisions(coObjects, coEvents);
+		// No collision occured, proceed normally
+		if (coEvents.size() == 0)
+		{
+			x += dx;
+			y += dy;
+		}
+		else
+		{
+			float min_tx, min_ty, nx = 0, ny;
+			float rdx = 0;
+			float rdy = 0;
 
-		//	// TODO: This is a very ugly designed function!!!!
-		//	FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nx, ny, rdx, rdy);
+			// TODO: This is a very ugly designed function!!!!
+			FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nx, ny, rdx, rdy);
 
-		//	// block every object first!
-		//	x += min_tx * dx + nx * 0.4f;
-		//	y += min_ty * dy + ny * 0.4f;
+			// block every object first!
+			x += min_tx * dx + nx * 0.2f;
+			y += min_ty * dy + ny * 0.2f;
 
-		//	if (nx != 0) vx = 0;
-		//	if (ny != 0) vy = 0;
+			if (nx != 0) vx = 0;
+			if (ny != 0) vy = 0;
 
+			//Collision logic with other objects
 
-			//
-			// Collision logic with other objects
-			//
-			//for (UINT i = 0; i < coEventsResult.size(); i++)
-			//{
-			//	LPCOLLISIONEVENT e = coEventsResult[i];
+			for (UINT i = 0; i < coEventsResult.size(); i++)
+			{
+				LPCOLLISIONEVENT e = coEventsResult[i];
 
-			//	if (dynamic_cast<Box*>(e->obj)) // if e->obj is Goomba 
-			//	{
-			//		Box* box = dynamic_cast<Box*>(e->obj);
-
-			//		// jump on top >> kill Goomba and deflect a bit 
-			//		if (e->ny < 0)
-			//		{
-			//			if (goomba->GetState() != GOOMBA_STATE_DIE)
-			//			{
-			//				goomba->SetState(GOOMBA_STATE_DIE);
-			//				vy = -MARIO_JUMP_DEFLECT_SPEED;
-			//			}
-			//		}
-			//		else if (e->nx != 0)
-			//		{
-			//			if (untouchable == 0)
-			//			{
-			//				if (goomba->GetState() != GOOMBA_STATE_DIE)
-			//				{
-			//					if (level > MARIO_LEVEL_SMALL)
-			//					{
-			//						level = MARIO_LEVEL_SMALL;
-			//						StartUntouchable();
-			//					}
-			//					else
-			//						SetState(MARIO_STATE_DIE);
-			//				}
-			//			}
-			//		}
-			//	}
-			//}
-		//}
+				if (dynamic_cast<WaterPipe*>(e->obj))
+				{
+					iscoliwithpipe=true;
+				}
+				if (dynamic_cast<CBrick*>(e->obj))
+				{
+					if(iscoliwithpipe)
+						vx = -0.05f;
+				}
+			}
+		}
 		// clean up collision events
-		//for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
+		for (UINT i = 0; i < coEvents.size(); i++) 
+			delete coEvents[i];
+		DebugOut(L"vx=%f, vy%f\n", vx, vy);
 		break;
+	}
 	default:
 		break;
 	}
+	Grid::GetInstance()->Update(this);
 }
 
 void Item::Render()

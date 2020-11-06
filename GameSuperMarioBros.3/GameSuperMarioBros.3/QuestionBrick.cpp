@@ -23,7 +23,8 @@ void QuestionBrick::Render()
 		ani = 1;
 	else
 		ani = 0;
-	animation_set->at(ani)->Render(x, y);
+	if(animation_set->at(ani)!=NULL)
+		animation_set->at(ani)->Render(x, y);
 	//RenderBoundingBox();
 }
 

@@ -41,6 +41,8 @@ class CGame
 
 	int screen_width;
 	int screen_height; 
+	int backBufferWidth = 0;
+	int backBufferHeight = 0;
 
 	unordered_map<int, LPSCENE> scenes;
 	int current_scene; 
@@ -49,6 +51,8 @@ class CGame
 	void _ParseSection_SCENES(string line);
 
 public:
+	int GetBackBufferWidth() { return backBufferWidth; }
+	int GetBackBufferHeight() { return backBufferHeight; }
 	void InitKeyboard();
 	void SetKeyHandler(LPKEYEVENTHANDLER handler) { keyHandler = handler; }
 	void Init(HWND hWnd);

@@ -1,5 +1,6 @@
 #pragma once
 #include "GameObject.h"
+#include "Koopas.h"
 
 #define MARIO_WALKING_SPEED		0.01f 
 //0.1f
@@ -208,17 +209,21 @@
 #define	MARIO_LEVEL_RACCOON	4
 
 #define MARIO_BIG_BBOX_WIDTH  16
-#define MARIO_BIG_BBOX_HEIGHT 32
+#define MARIO_BIG_BBOX_HEIGHT 28
 
 #define MARIO_SMALL_BBOX_WIDTH  16
 #define MARIO_SMALL_BBOX_HEIGHT 16
 
 #define MARIO_UNTOUCHABLE_TIME 5000
+#define MARIO_KICK_TIME 500
+#define MARIO_HOLD_TIME 5000
 #define MARIO_SKID_TIME 200
 
 
 class CMario : public CGameObject
 {
+	static CMario* __instance;
+
 	int level;
 	int untouchable;
 	int money = 0;
@@ -228,8 +233,15 @@ class CMario : public CGameObject
 	float start_y; 
 public: 
 	DWORD skid_start;
+	DWORD kick_start;
+	DWORD hold_start;
 
-
+	vector<LPGAMEOBJECT> listweapon;
+	CKoopas* rua;
+	bool isHold = false;
+	bool iscanHold = false;
+	bool isColiWithKoopas = false;
+	bool isKick = false;
 	bool isJump = false;
 	bool iswalking = false;
 	bool isBonusvy = true;
@@ -240,6 +252,7 @@ public:
 	float power = 0.0f;
 	bool isRun = false;
 	bool isSkid = false;
+	bool ispressA = false;
 
 	CMario(float x = 0.0f, float y = 0.0f);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *colliable_objects = NULL);
@@ -248,6 +261,7 @@ public:
 	void SetState(int state);
 	void SetLevel(int l) { level = l; }
 	void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount64(); }
+	void StartKick() { isKick = 1; kick_start = GetTickCount64(); }
 
 	void Reset();
 
@@ -255,5 +269,8 @@ public:
 	void DecreasePower();
 	void IncreasePower();
 	bool ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject = NULL);
+	void ColitionWithItem(vector<LPGAMEOBJECT>* listObject = NULL);
+	void ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject = NULL);
+	static CMario* GetInstance();
 
 };
