@@ -19,7 +19,6 @@ Map::Map()
 
 void Map::_ParseSection_SETTING(string line)
 {
-	//TotalTiles >> RowMap >> ColumnMap >> RowTile >> ColumnTile >> widthTile >> heightTile;
 	vector<string> tokens = split(line," ");
 
 	if (tokens.size() < 7) return; // skip invalid lines
@@ -102,23 +101,6 @@ void Map::DrawMap()
 	mx = cam->GetCameraPosition().x;
 	my = cam->GetCameraPosition().y;
 	int tile_start_column = (int)mx / widthTile;
-	//int tile_start_row = (int)my / widthTile;
-	//CSprites* sprites = CSprites::GetInstance();
-	//int a = -1;
-	////DebugOut(L"bat dau\n");
-	//for (int i = 0; i < RowMap; i++)
-	//	for (int j = tile_start_column; j < tile_column+ tile_start_column; j++)
-	//	//for (int j = 0; j < ColumnMap; j++)
-	//	{
-	//		
-	//		a = TileMap[i][j];
-	//		if (a >= 0)
-	//			sprites->Get(50000 + a)->Draw(j * widthTile, i * heightTile);
-	//		//if (a == 55)DebugOut(L"%d	%d\n", j * widthTile, i * heightTile);
-	//	}
-	////DebugOut(L"bhet\n");
-
-
 	CSprites* sprites = CSprites::GetInstance();
 	int a = -1;
 	//DebugOut(L"bat dau\n");

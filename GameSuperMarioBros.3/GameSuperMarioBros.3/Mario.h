@@ -1,6 +1,7 @@
 #pragma once
 #include "GameObject.h"
 #include "Koopas.h"
+#include "Ball.h"
 
 #define MARIO_WALKING_SPEED		0.01f 
 //0.1f
@@ -188,7 +189,8 @@
 #define MARIO_ANIMATION_REACCOON_DOOR		131
 #define MARIO_ANIMATION_REACCOON_SPIN_LEFT		132
 #define MARIO_ANIMATION_REACCOON_SPIN_RIGHT		133
-
+#define MARIO_ANIMATION_REACCOON_WAGTAIL_LEFT		135
+#define MARIO_ANIMATION_REACCOON_WAGTAIL_RIGHT		134
 
 #define MARIO_ANI_BIG_IDLE_RIGHT		0
 #define MARIO_ANI_BIG_IDLE_LEFT			1
@@ -210,6 +212,7 @@
 
 #define MARIO_BIG_BBOX_WIDTH  16
 #define MARIO_BIG_BBOX_HEIGHT 28
+#define MARIO_RACCOON_BBOX_WIDTH	24
 
 #define MARIO_SMALL_BBOX_WIDTH  16
 #define MARIO_SMALL_BBOX_HEIGHT 16
@@ -218,6 +221,8 @@
 #define MARIO_KICK_TIME 500
 #define MARIO_HOLD_TIME 5000
 #define MARIO_SKID_TIME 200
+#define MARIO_THROW_TIME 200
+#define MARIO_WAG_TIME 300
 
 
 class CMario : public CGameObject
@@ -235,8 +240,12 @@ public:
 	DWORD skid_start;
 	DWORD kick_start;
 	DWORD hold_start;
+	DWORD throw_start;
+	DWORD wag_start;
 
 	vector<LPGAMEOBJECT> listweapon;
+	vector<LPGAMEOBJECT> listball;
+
 	CKoopas* rua;
 	bool isHold = false;
 	bool iscanHold = false;
@@ -253,6 +262,10 @@ public:
 	bool isRun = false;
 	bool isSkid = false;
 	bool ispressA = false;
+	bool isthrow = false;
+	bool iswag = false;
+	bool frame2wag = false;
+	bool isfly = false;
 
 	CMario(float x = 0.0f, float y = 0.0f);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *colliable_objects = NULL);
@@ -260,6 +273,7 @@ public:
 
 	void SetState(int state);
 	void SetLevel(int l) { level = l; }
+	int GetLevel() { return level; }
 	void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount64(); }
 	void StartKick() { isKick = 1; kick_start = GetTickCount64(); }
 

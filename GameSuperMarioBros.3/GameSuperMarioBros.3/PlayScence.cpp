@@ -10,6 +10,9 @@
 #include "QuestionBrick.h"
 #include "Item.h"
 #include "WaterPipe.h"
+#include "Ball.h"
+
+#define animationball	5
 
 using namespace std;
 
@@ -362,8 +365,13 @@ void CPlayScene::Update(DWORD dt)
 					Item* item = dynamic_cast<Item*>(objects_item.at(m));
 					if (item->id == brick->iditem)
 					{
-						item->SetSpeed(0, -0.3);
+						if (item->type == 0)item->SetSpeed(0, -0.3);
 						if (item->type == 1)item->SetSpeed(0, -0.01);
+						if (item->type == 2)
+						{
+							item->SetPosition(brick->x,brick->y);
+							item->SetSpeed(0, -0.3);
+						}
 						grid->addObject(item);
 						brick->isAddItem = true;
 					}
@@ -378,7 +386,13 @@ void CPlayScene::Update(DWORD dt)
 	mapheight = map->GetHeight();
 	mapwidth = map->GetWidth();
 	player->GetPosition(cx, cy);
-
+	if (player->iswag)
+	{
+		if (player->nx > 0)
+			cx -= 8;
+		else if (player->nx < 0)
+			cx += 8;
+	}
 	D3DXVECTOR3 pos = cam->GetCameraPosition();
 	if (mapwidth > SCREEN_WIDTH) {
 		if (cx + 5 < SCREEN_WIDTH / 2) {
@@ -397,11 +411,15 @@ void CPlayScene::Update(DWORD dt)
 
 	if (mapheight > SCREEN_HEIGHT )
 	{
-		if (cy < mapheight - SCREEN_HEIGHT) {
-			cy = cy - SCREEN_HEIGHT;
-		}
-		else {
-			cy = mapheight - SCREEN_HEIGHT+32;
+		if (cy < SCREEN_HEIGHT-32)
+		{
+			cy = 0;
+		} else if (cy > mapheight - SCREEN_HEIGHT)
+		{
+			cy= mapheight - SCREEN_HEIGHT+32;
+		}else //if (cy < mapheight - SCREEN_HEIGHT)
+		{
+			cy = cy - SCREEN_HEIGHT/2+32;
 		}
 	}
 	else {
@@ -409,38 +427,36 @@ void CPlayScene::Update(DWORD dt)
 	}
 	if (cy < 0) cy = 0;
 	cam->SetCameraPosition((int)cx, (int)cy);
-	//cam->SetCameraPosition(1240, 0);
-
-	//for (size_t i = 0; i < objects.size(); i++)
-	//{
-	//	if (dynamic_cast<Torch*>(objects[i]))
-	//	{
-	//		Torch* torch = dynamic_cast<Torch*>(objects[i]);
-	//		if (torch->isColi == true)
-	//			//Grid* grid = Grid::GetInstance();
-	//			grid->deleteObject(objects[i]);
-	//	}
-	//	else if (dynamic_cast<Candle*>(objects[i]))
-	//	{
-	//		Candle* candle = dynamic_cast<Candle*>(objects[i]);
-	//		if (candle->isColi == true)
-	//			//Grid* grid = Grid::GetInstance();
-	//			grid->deleteObject(objects[i]);
-	//	}
-	//}
 }
 
 void CPlayScene::Render()
 {
 	map->DrawMap();
 	grid->GetListOfObjects(&objects);
+	vector<LPGAMEOBJECT> listobject;
+	vector<LPGAMEOBJECT> listitem;
 	for (int i = 0; i < objects.size(); i++)
 	{
-			objects[i]->Render();
-	}
+			if (dynamic_cast<Item*>(objects.at(i)))
+				listitem.push_back(objects.at(i));
+			else
+				listobject.push_back(objects.at(i));
 
+	}
+	for (int i = 0; i < listitem.size(); i++)
+	{
+		listitem[i]->Render();
+	}
+	for (int i = 0; i < listobject.size(); i++)
+	{
+		listobject[i]->Render();
+	}
 	if (player)
+	{
 		player->Render();
+		for (int i = 0; i < player->listball.size(); i++)
+			player->listball.at(i)->Render();
+	}
 }
 
 /*
@@ -486,12 +502,51 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 		break;
 	case DIK_S:
 		mario->isUpS = false;
+		if (mario->isJump&&!mario->isBonusvy&&mario->GetLevel()==MARIO_LEVEL_RACCOON)
+		{
+			mario->isfly = true;
+			mario->SetSpeed(mario->vx, 0);
+		}
 		break;
-	//case DIK_A: 
-		//mario->Reset();
-		//break;
+	case DIK_A: 
+		//add ball
+		if (mario->GetLevel() == MARIO_LEVEL_FIRE)
+		{
+			if (!mario->isthrow)
+			{
+				Ball* b = new Ball();
+				b->SetPosition(mario->x, mario->y);
+				b->nx = mario->nx;
+				LPANIMATION_SET ani_set = CAnimationSets::GetInstance()->Get(animationball);
+				b->SetAnimationSet(ani_set);
+				mario->listball.push_back(b);
+				mario->isthrow = true;
+				mario->throw_start = GetTickCount64();
+			}
+		}
+		if (mario->GetLevel() == MARIO_LEVEL_RACCOON)
+		{
+			if (!mario->iswag)
+			{
+				mario->iswag = true;
+				mario->wag_start = GetTickCount64();
+				if (mario->nx > 0)
+					mario->SetPosition(mario->x + 8, mario->y);
+				if (mario->nx < 0)
+					mario->SetPosition(mario->x - 8, mario->y);
+
+			}
+		}
+
+		break;
 	case DIK_ESCAPE:
 		DestroyWindow(game->getHwnd());
+		break;
+	case DIK_F:
+		mario->SetLevel(MARIO_LEVEL_FIRE);
+		break;
+	case DIK_R:
+		mario->SetLevel(MARIO_LEVEL_RACCOON);
 		break;
 	}
 }
@@ -514,9 +569,16 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 			mario->rua == NULL;
 		}
 		break;
+	case DIK_M:
+		mario->nx = -mario->nx;
+		break;
 	case DIK_S:
 		mario->isUpS = true;
 		mario->iscanjumpS = false;
+		if (mario->isfly)
+		{
+			mario->isfly = false;
+		}
 		break;
 	}
 }

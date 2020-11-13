@@ -36,7 +36,7 @@ Grid::Grid()
 	cells = new LCell[cell_cloumn];
 	for (int i = 0; i < cell_cloumn; i++)
 		cells[i] = new Cell[cell_row];
-	DebugOut(L"cellwidth: %d, cellheight: %d, cell_cloumn: %d, cell_row: %d \n", cellwidth, cellheight, cell_cloumn, cell_row);
+	//DebugOut(L"cellwidth: %d, cellheight: %d, cell_cloumn: %d, cell_row: %d \n", cellwidth, cellheight, cell_cloumn, cell_row);
 }
 
 Grid::~Grid()
@@ -140,7 +140,7 @@ void Grid::deleteObject(LPGAMEOBJECT object)
 		cell_x = floor((float)object->x / cellwidth);
 		cell_y = floor((float)object->y / cellheight);
 	//}
-	cells[cell_x][cell_y].earseObj(object);
+		cells[cell_x][cell_y].earseObj(object);
 
 }
 

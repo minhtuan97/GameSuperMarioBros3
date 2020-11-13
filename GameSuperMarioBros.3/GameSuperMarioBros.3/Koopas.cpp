@@ -32,11 +32,20 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	{
 		float xm, ym;
 			mario->GetPosition(xm, ym);
-
-			if (mario->nx > 0)
-				SetPosition(xm + 16, ym);
-			else if (mario->nx < 0)
-				SetPosition(xm - 16, ym);
+			if (mario->GetLevel()== MARIO_LEVEL_SMALL)
+			{
+				if (mario->nx > 0)
+					SetPosition(xm + 16, ym);
+				else if (mario->nx < 0)
+					SetPosition(xm - 16, ym);
+			}
+			else
+			{
+				if (mario->nx > 0)
+					SetPosition(xm + 16, ym+12);
+				else if (mario->nx < 0)
+					SetPosition(xm - 16, ym+12);
+			}
 			Grid::GetInstance()->Update(this);
 		return;
 	}
@@ -99,7 +108,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		for (UINT i = 0; i < coEventsResult.size(); i++)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
-			if (dynamic_cast<WaterPipe*>(e->obj) || dynamic_cast<QuestionBrick*>(e->obj)|| dynamic_cast<CBrick*>(e->obj) || dynamic_cast<Box*>(e->obj))
+			if (dynamic_cast<WaterPipe*>(e->obj) || dynamic_cast<CBrick*>(e->obj) || dynamic_cast<Box*>(e->obj))
 			{
 				if (nx > 0)
 				{
@@ -109,7 +118,29 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				{
 					vx = -KOOPAS_KICK_SPEED;
 				}
-				DebugOut(L"nx=%d, vx=%f\n", nx, vx);			
+				//DebugOut(L"nx=%d, vx=%f\n", nx, vx);			
+			}
+			if (dynamic_cast<QuestionBrick*>(e->obj))
+			{
+				QuestionBrick* brick = dynamic_cast<QuestionBrick*>(e->obj);
+
+				if (nx > 0)
+				{
+					vx = KOOPAS_KICK_SPEED;
+				}
+				else if (nx < 0)
+				{
+					vx = -KOOPAS_KICK_SPEED;
+				}
+				if (e->nx != 0)
+				{
+					if (!brick->isColi)
+					{
+						brick->isColi = true;
+						brick->SetSpeed(0, -0.1);
+					}
+				}
+				//DebugOut(L"nx=%d, vx=%f\n", nx, vx);			
 			}
 		}
 		
@@ -130,7 +161,11 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			x = x_min;
 		}
 	}
-	Grid::GetInstance()->Update(this);
+	//if (x < 1)
+	//	Grid::GetInstance()->deleteObject(this);
+	//else
+	//	Grid::GetInstance()->Update(this);
+
 	
 }
 

@@ -5,6 +5,7 @@ class Item : public CGameObject
 {
 public:
 	bool iscoliwithpipe = false;
+	bool isFall = false;
 	int id;
 	int type;
 	bool isEnable;

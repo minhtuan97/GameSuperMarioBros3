@@ -5,10 +5,12 @@
 #include "Box.h"
 #include "WaterPipe.h"
 #include "Utils.h"
+#include "Map.h"
 
 #define	GOlDEN_GRAVITY	0.001f
 #define TYPE_GOLDEN	0
 #define TYPE_NAM	1
+#define TYPE_LA	2
 
 Item::Item():CGameObject()
 {
@@ -46,6 +48,30 @@ void Item::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			SetSpeed(0, 0);
 			grid->deleteObject(this);
 		}
+		break;
+	case TYPE_LA:
+		CGameObject::Update(dt);
+		if(!isFall)
+			vy += GOlDEN_GRAVITY * dt;
+
+		y += dy;
+		x += dx;
+		if (y < yde)
+		{
+			vx = 0.5;
+			isFall = true;
+			vy = 0.02;
+		}
+		if (isFall)
+		{
+			if (x > xde + 24) vx = -0.1;
+			if (x < xde - 24) vx = 0.1;
+		}
+		else
+			vx = 0;
+		
+		if(y>Map::GetInstance()->GetHeight())
+			grid->deleteObject(this);
 		break;
 	case TYPE_NAM:
 	{
@@ -109,7 +135,7 @@ void Item::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		// clean up collision events
 		for (UINT i = 0; i < coEvents.size(); i++) 
 			delete coEvents[i];
-		DebugOut(L"vx=%f, vy%f\n", vx, vy);
+		//DebugOut(L"vx=%f, vy%f\n", vx, vy);
 		break;
 	}
 	default:
