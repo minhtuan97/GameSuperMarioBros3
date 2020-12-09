@@ -1115,12 +1115,32 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 				// jump on top >> kill Goomba and deflect a bit 
 				if (e->ny < 0)
 				{
-					if (goomba->GetState() != GOOMBA_STATE_DIE)
+					if (goomba->type == 1)
 					{
-						goomba->SetState(GOOMBA_STATE_DIE);
-						goomba->iskilltop = true;
-						vy = -MARIO_JUMP_DEFLECT_SPEED;
+						//goomba->type == 0;
+						if (goomba->GetState() != GOOMBA_STATE_DIE)
+						{
+							if (goomba->GetState() == GOOMBA_STATE_FLY|| goomba->GetState() == GOOMBA_STATE_WALKING)
+								goomba->SetState(GOOMBA_STATE_WALKING2);
+							else if (goomba->GetState() == GOOMBA_STATE_WALKING2)
+							{
+								goomba->SetState(GOOMBA_STATE_DIE);
+								goomba->iskilltop = true;
+								vy = -MARIO_JUMP_DEFLECT_SPEED;
+							}
+
+						}
 					}
+					else {
+						if (goomba->type == 0)
+							if (goomba->GetState() != GOOMBA_STATE_DIE)
+							{
+								goomba->SetState(GOOMBA_STATE_DIE);
+								goomba->iskilltop = true;
+								vy = -MARIO_JUMP_DEFLECT_SPEED;
+							}
+					}
+
 				}
 				else if (e->nx != 0)
 				{

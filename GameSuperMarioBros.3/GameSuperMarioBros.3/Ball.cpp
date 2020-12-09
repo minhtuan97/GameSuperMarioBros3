@@ -3,6 +3,9 @@
 #include "Brick.h"
 #include "Goomba.h"
 #include "Koopas.h"
+#include "Camera.h"
+#include "Utils.h"
+#include "define.h"
 
 void Ball::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 {
@@ -83,6 +86,12 @@ void Ball::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			}
 		}
 	}
+	//ball ra khoi camera
+	float xcam = Camera::GetInstance()->GetCameraPosition().x;
+	float ycam = Camera::GetInstance()->GetCameraPosition().y;
+
+	if (x<xcam || x>xcam + SCREEN_WIDTH || y<ycam || y>ycam + SCREEN_HEIGHT)
+		isthrow = false;
 	ColitionWithEnemy(coObjects);
 	//Grid::GetInstance()->Update(this);
 }
@@ -167,12 +176,15 @@ void Ball::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 			{
 				CKoopas* koopas = dynamic_cast<CKoopas*>(e->obj);
 				koopas->SetState(KOOPAS_STATE_DIE);
+				isthrow = false;
 
 			}
 			if (dynamic_cast<CGoomba*>(e->obj))
 			{
 				CGoomba* goomba = dynamic_cast<CGoomba*>(e->obj);
 				goomba->SetState(GOOMBA_STATE_DIE);
+				goomba->SetSpeed(0, -0.1);
+				isthrow = false;
 			}
 		}
 	}

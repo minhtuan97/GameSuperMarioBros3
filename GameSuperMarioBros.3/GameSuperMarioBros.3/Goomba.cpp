@@ -3,10 +3,20 @@
 #include "Brick.h"
 #include "QuestionBrick.h"
 #include "WaterPipe.h"
+#include "Camera.h"
+#include "define.h"
 
-CGoomba::CGoomba()
+CGoomba::CGoomba(int nx, int type)
 {
 	SetState(GOOMBA_STATE_WALKING);
+	this->type = type;
+	
+	if(nx==-1)
+		vx = -GOOMBA_WALKING_SPEED;
+	
+	if (type == 1)
+		SetState(GOOMBA_STATE_FLY);
+
 }
 
 void CGoomba::GetBoundingBox(float &left, float &top, float &right, float &bottom)
@@ -14,11 +24,18 @@ void CGoomba::GetBoundingBox(float &left, float &top, float &right, float &botto
 	left = x;
 	top = y;
 	right = x + GOOMBA_BBOX_WIDTH;
-
+	
 	if (state == GOOMBA_STATE_DIE)
 		bottom = y + GOOMBA_BBOX_HEIGHT_DIE;
 	else 	
 		bottom = y + GOOMBA_BBOX_HEIGHT;
+	if (type == 1)
+	{
+		if (state == GOOMBA_STATE_FLY)
+			bottom = y + 24;
+		else if(state==GOOMBA_STATE_WALKING)
+			bottom = y + 19;
+	}
 }
 
 void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
@@ -27,6 +44,21 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	if (GetTickCount64() - startdie>TIME_DIE&& state == GOOMBA_STATE_DIE)
 	{
 		Grid::GetInstance()->deleteObject(this);
+		return;
+	}
+	if (type == 1)
+	{
+		if (GetTickCount64() - startfly > TIME_FLY && state == GOOMBA_STATE_FLY)
+		{
+			startfly = 0;
+			SetState(GOOMBA_STATE_WALKING);
+		}
+		if (GetTickCount64() - startwalk > TIME_WALK && state == GOOMBA_STATE_WALKING)
+		{
+			startwalk = 0;
+			SetState(GOOMBA_STATE_FLY);
+		}
+
 	}
 	vy += GOOMBA__GRAVITY * dt;
 	//
@@ -117,16 +149,37 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			}
 		}
 	}
-	Grid::GetInstance()->Update(this);
+	//goomba ra khoi camera
+	float xcam = Camera::GetInstance()->GetCameraPosition().x;
+	float ycam = Camera::GetInstance()->GetCameraPosition().y;
+	
+	if (x>xcam || x<xcam + SCREEN_WIDTH - BRICK_BBOX_WIDTH || y>ycam || y<ycam + SCREEN_HEIGHT)
+		Grid::GetInstance()->Update(this);
+	if (this->y<ycam || this->y>ycam + SCREEN_HEIGHT - GOOMBA_BBOX_HEIGHT)
+		Grid::GetInstance()->deleteObject(this);
+
+		
 }
 
 void CGoomba::Render()
 {
 	int ani = GOOMBA_ANI_WALKING;
-	if (state == GOOMBA_STATE_DIE) {
+	if (state == GOOMBA_STATE_DIE) 
+	{
 		ani = GOOMBA_ANI_DIE;
 	}
+	if (type == 1)
+	{
+		if (state == GOOMBA_STATE_FLY)
+			ani = GOOMBA_ANI_FLY;
+		else if (state == GOOMBA_STATE_WALKING)
+			ani = GOOMBA_ANI_FLY_WALK;
+		else if (state == GOOMBA_STATE_WALKING2)
+			ani = GOOMBA_ANI_FLY_WALK2;
+		else if (state == GOOMBA_STATE_DIE)
+			ani = GOOMBA_ANI_DIE2;
 
+	}
 	animation_set->at(ani)->Render(x,y);
 
 	RenderBoundingBox();
@@ -143,7 +196,17 @@ void CGoomba::SetState(int state)
 			vy = 0;
 			startdie = GetTickCount64();
 			break;
-		case GOOMBA_STATE_WALKING: 
+		case GOOMBA_STATE_WALKING:
 			vx = -GOOMBA_WALKING_SPEED;
+			startwalk = GetTickCount64();
+			break;
+		case GOOMBA_STATE_FLY:
+			vx = -GOOMBA_WALKING_SPEED;
+			vy = GOOMBA_FLY_SPEED;
+			startfly = GetTickCount64();
+			break;
+		case GOOMBA_STATE_WALKING2:
+			vx = -GOOMBA_WALKING_SPEED;
+			break;
 	}
 }

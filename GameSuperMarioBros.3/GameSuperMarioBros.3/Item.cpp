@@ -6,6 +6,7 @@
 #include "WaterPipe.h"
 #include "Utils.h"
 #include "Map.h"
+#include "Camera.h"
 
 #define	GOlDEN_GRAVITY	0.001f
 #define TYPE_GOLDEN	0
@@ -141,7 +142,14 @@ void Item::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	default:
 		break;
 	}
-	Grid::GetInstance()->Update(this);
+	//Grid::GetInstance()->Update(this);
+	
+	float xcam = Camera::GetInstance()->GetCameraPosition().x;
+	float ycam = Camera::GetInstance()->GetCameraPosition().y;
+	if (x<xcam || x>xcam + SCREEN_WIDTH || y<ycam || y>ycam + SCREEN_HEIGHT)
+		Grid::GetInstance()->deleteObject(this);
+	else
+		Grid::GetInstance()->Update(this);
 }
 
 void Item::Render()

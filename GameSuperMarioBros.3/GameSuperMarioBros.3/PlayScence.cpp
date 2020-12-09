@@ -170,8 +170,12 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		DebugOut(L"[INFO] Player object created!\n");
 		break;
 	case OBJECT_TYPE_GOOMBA: 
-		obj = new CGoomba();
+	{
+		int nx = atof(tokens[4].c_str());
+		int type = atof(tokens[5].c_str());
+		obj = new CGoomba(nx,type);
 		break;
+	}
 	case OBJECT_TYPE_BRICK: 
 	{
 		obj = new CBrick();
@@ -514,14 +518,17 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 		{
 			if (!mario->isthrow)
 			{
-				Ball* b = new Ball();
-				b->SetPosition(mario->x, mario->y);
-				b->nx = mario->nx;
-				LPANIMATION_SET ani_set = CAnimationSets::GetInstance()->Get(animationball);
-				b->SetAnimationSet(ani_set);
-				mario->listball.push_back(b);
-				mario->isthrow = true;
-				mario->throw_start = GetTickCount64();
+				if (mario->listball.size() < 3)
+				{
+					Ball* b = new Ball();
+					b->SetPosition(mario->x, mario->y);
+					b->nx = mario->nx;
+					LPANIMATION_SET ani_set = CAnimationSets::GetInstance()->Get(animationball);
+					b->SetAnimationSet(ani_set);
+					mario->listball.push_back(b);
+					mario->isthrow = true;
+					mario->throw_start = GetTickCount64();
+				}
 			}
 		}
 		if (mario->GetLevel() == MARIO_LEVEL_RACCOON)
@@ -568,6 +575,7 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 			mario->rua->SetState(KOOPAS_STATE_KICK);
 			mario->rua == NULL;
 		}
+		mario->isColiWithKoopas = false;
 		break;
 	case DIK_M:
 		mario->nx = -mario->nx;
