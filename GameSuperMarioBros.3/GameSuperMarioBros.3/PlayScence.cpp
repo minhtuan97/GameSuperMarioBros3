@@ -11,6 +11,8 @@
 #include "Item.h"
 #include "WaterPipe.h"
 #include "Ball.h"
+#include "Coin.h"
+#include "Plant.h"
 
 #define animationball	5
 
@@ -45,6 +47,8 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define OBJECT_TYPE_QUESTIONBRICK	5
 #define	OBJECT_TYPE_ITEM	6
 #define	OBJECT_TYPE_WATERPIPE	7
+#define	OBJECT_TYPE_COIN	8
+#define	OBJECT_TYPE_PLANT	9
 
 #define OBJECT_TYPE_PORTAL	50
 
@@ -181,7 +185,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CBrick();
 		int r = atof(tokens[4].c_str());
 		int b = atof(tokens[5].c_str());
-		int type = atof(tokens[5].c_str());
+		int type = atof(tokens[6].c_str());
 		CBrick* brick=(CBrick*)obj;
 		brick->right = r;
 		brick->bot = b;
@@ -210,12 +214,14 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_WATERPIPE:
 	{
 		obj = new WaterPipe();
-		int r = atof(tokens[4].c_str());
-		int b = atof(tokens[5].c_str());
+		//int r = atof(tokens[4].c_str());
+		//int b = atof(tokens[5].c_str());
 		//int type = atof(tokens[6].c_str());
 		WaterPipe* p = (WaterPipe*)obj;
-		p->right = r;
-		p->bot = b;
+		int ani = atoi(tokens[4].c_str());
+		p->ani = ani;
+		//p->right = r;
+		//p->bot = b;
 		break;
 	}
 	case OBJECT_TYPE_ITEM:
@@ -231,12 +237,30 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	}
 	case OBJECT_TYPE_KOOPAS: 
 	{
-		obj = new CKoopas();
 		float xmin = atof(tokens[4].c_str());
 		float xmax = atof(tokens[5].c_str());
+		int type = atoi(tokens[6].c_str());
+		obj = new CKoopas(type,x,y);
 		CKoopas* k = (CKoopas*)obj;
 		k->x_min = xmin;
 		k->x_max = xmax;
+
+		break;
+	}
+	case OBJECT_TYPE_PLANT:
+	{
+		float ymin = atof(tokens[4].c_str());
+		float ymax = atof(tokens[5].c_str());
+		int type = atoi(tokens[6].c_str());
+		obj = new Plant(type, x, y);
+		Plant* k = (Plant*)obj;
+		k->y_min = ymin;
+		k->y_max = ymax;
+		break;
+	}
+	case OBJECT_TYPE_COIN:
+	{
+		obj = new Coin();
 		break;
 	}
 	case OBJECT_TYPE_PORTAL:
@@ -430,6 +454,8 @@ void CPlayScene::Update(DWORD dt)
 		cy = mapheight - SCREEN_HEIGHT;
 	}
 	if (cy < 0) cy = 0;
+	//cy -= SCREEN_HEIGHT / 2;
+
 	cam->SetCameraPosition((int)cx, (int)cy);
 }
 
@@ -439,21 +465,39 @@ void CPlayScene::Render()
 	grid->GetListOfObjects(&objects);
 	vector<LPGAMEOBJECT> listobject;
 	vector<LPGAMEOBJECT> listitem;
+	vector<LPGAMEOBJECT> listPipe;
+	vector<LPGAMEOBJECT> listPlant;
+
 	for (int i = 0; i < objects.size(); i++)
 	{
 			if (dynamic_cast<Item*>(objects.at(i)))
 				listitem.push_back(objects.at(i));
 			else
-				listobject.push_back(objects.at(i));
-
+				if (dynamic_cast<WaterPipe*>(objects.at(i)))
+					listPipe.push_back(objects.at(i));
+				else
+					if (dynamic_cast<Plant*>(objects.at(i)))
+						listPlant.push_back(objects.at(i));
+					else
+						listobject.push_back(objects.at(i));
+	}
+	
+	for (int i = 0; i < listobject.size(); i++)
+	{
+		listobject[i]->Render();
 	}
 	for (int i = 0; i < listitem.size(); i++)
 	{
 		listitem[i]->Render();
 	}
-	for (int i = 0; i < listobject.size(); i++)
+	
+	for (int i = 0; i < listPlant.size(); i++)
 	{
-		listobject[i]->Render();
+		listPlant[i]->Render();
+	}
+	for (int i = 0; i < listPipe.size(); i++)
+	{
+		listPipe[i]->Render();
 	}
 	if (player)
 	{

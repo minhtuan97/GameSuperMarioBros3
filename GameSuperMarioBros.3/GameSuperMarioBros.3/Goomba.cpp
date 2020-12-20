@@ -1,4 +1,4 @@
-#include "Goomba.h"
+﻿#include "Goomba.h"
 #include "Grid.h"
 #include "Brick.h"
 #include "QuestionBrick.h"
@@ -155,6 +155,8 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	
 	if (x>xcam || x<xcam + SCREEN_WIDTH - BRICK_BBOX_WIDTH || y>ycam || y<ycam + SCREEN_HEIGHT)
 		Grid::GetInstance()->Update(this);
+	
+	//xoa khỏi khi ra khoi map theo trục y
 	if (this->y<ycam || this->y>ycam + SCREEN_HEIGHT - GOOMBA_BBOX_HEIGHT)
 		Grid::GetInstance()->deleteObject(this);
 

@@ -1,12 +1,13 @@
 #pragma once
 #include "GameObject.h"
 
-class WaterPipe: public CGameObject
+#define COIN_BBOX_WIDTH  16
+#define COIN_BBOX_HEIGHT 16
+
+class Coin:public CGameObject
 {
 public:
-	int ani;
-	int type = 0;
-	int right, bot;
+	boolean iscoli = false;
 	virtual void Render();
 	virtual void GetBoundingBox(float& l, float& t, float& r, float& b);
 };

@@ -80,7 +80,7 @@ void Grid::GetListOfObjects(vector<LPGAMEOBJECT>* list_object)
 	bottom = ceil((float)(cam->GetCameraPosition().y + SCREEN_HEIGHT) / cellheight);
 
 	LCell cell;
-	for (i = left; i < right; i++)
+	for (i = left; i <= right&& i< cell_cloumn; i++)
 	{
 		for (j = top; j < bottom; j++)
 		{

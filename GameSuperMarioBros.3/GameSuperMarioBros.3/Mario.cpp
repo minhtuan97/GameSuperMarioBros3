@@ -15,6 +15,9 @@
 #include "Item.h"
 #include "Grid.h"
 #include "Goomba.h"
+#include "Coin.h"
+#include "Plant.h"
+#include "BallPlant.h"
 
 #define TYPE_NAM	1
 #define TYPE_LA	2
@@ -86,7 +89,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	}
 	if (GetTickCount64() - hold_start > MARIO_HOLD_TIME)
 	{
-		DebugOut(L"het tg hold\n");
+		//DebugOut(L"het tg hold\n");
 		//hold_start = 0;
 		/*if (rua)
 		{
@@ -496,7 +499,7 @@ void CMario::Render()
 	//if(frame2wag)
 	//	animation_set->at(ani)->Render(x-8, y, alpha);
 	//else
-	DebugOut(L"fly=%d, ani=%d, isbounus=%d\n", isfly, ani,isBonusvy);
+	//DebugOut(L"fly=%d, ani=%d, isbounus=%d\n", isfly, ani,isBonusvy);
 	
 	animation_set->at(ani)->Render(x, y, alpha);
 
@@ -980,6 +983,48 @@ void CMario::ColitionWithItem(vector<LPGAMEOBJECT>* listObject)
 		for(int i=0;i<listitem.size();i++)
 			Grid::GetInstance()->deleteObject(listitem.at(i));
 	}
+	for (UINT i = 0; i < coEvents.size(); i++) delete coEvents[i];
+
+	vector<LPGAMEOBJECT> listcoin;
+	listcoin.clear();
+
+	//va cham voi coin
+	for (int i = 0; i < listObject->size(); i++)
+	{
+		if (dynamic_cast<Coin*>(listObject->at(i)))
+		{
+			Coin* item = dynamic_cast<Coin*>(listObject->at(i));
+			listcoin.push_back(listObject->at(i));
+		}
+	}
+	
+	vector<LPCOLLISIONEVENT> coEvents2;
+	vector<LPCOLLISIONEVENT> coEventsResult2;
+	coEvents2.clear();
+	CalcPotentialCollisions(&listcoin, coEvents2);
+	if (coEvents2.size() != 0)
+	{
+
+		for (UINT i = 0; i < coEvents2.size(); i++)
+		{
+			LPCOLLISIONEVENT e = coEvents2[i];
+
+			if (dynamic_cast<Coin*>(e->obj))
+			{
+				this->money++;
+				Coin* coin = dynamic_cast<Coin*>(e->obj);
+				coin->iscoli = true;
+			}
+		}
+	}
+	for (int i = 0; i < listcoin.size(); i++)
+	{
+		Coin* coin = dynamic_cast<Coin*>(listcoin.at(i));
+		if (coin->iscoli)
+			Grid::GetInstance()->deleteObject(coin);
+	}
+	for (UINT i = 0; i < coEvents2.size(); i++) delete coEvents2[i];
+
 }
 
 void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
@@ -988,7 +1033,12 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 
 	vector<LPGAMEOBJECT> listkoopas;
 	vector<LPGAMEOBJECT> listgoomba;
+	vector<LPGAMEOBJECT> listPlant;
+	vector<LPGAMEOBJECT> listPlantball;
 	listkoopas.clear();
+	listgoomba.clear();
+	listPlant.clear();
+	listPlantball.clear();
 
 	for (int i = 0; i < listObject->size(); i++)
 	{
@@ -1003,6 +1053,16 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 			CGoomba* k = dynamic_cast<CGoomba*>(listObject->at(i));
 				listgoomba.push_back(listObject->at(i));
 		}
+		if (dynamic_cast<Plant*>(listObject->at(i)))
+		{
+			Plant* k = dynamic_cast<Plant*>(listObject->at(i));
+			listPlant.push_back(listObject->at(i));
+		}
+		if (dynamic_cast<BallPlant*>(listObject->at(i)))
+		{
+			BallPlant* k = dynamic_cast<BallPlant*>(listObject->at(i));
+			listPlantball.push_back(listObject->at(i));
+		}
 	}
 
 	vector<LPCOLLISIONEVENT> coEvents;
@@ -1015,6 +1075,8 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 	{
 		CalcPotentialCollisions(&listkoopas, coEvents);
 		CalcPotentialCollisions(&listgoomba, coEvents);
+		CalcPotentialCollisions(&listPlant, coEvents);
+		CalcPotentialCollisions(&listPlantball, coEvents);
 	}
 
 	// No collision occured, proceed normally
@@ -1031,8 +1093,8 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 
 		// TODO: This is a very ugly designed function!!!!
 		FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nx, ny, rdx, rdy);
-		x += min_tx * dx + nx * 0.1f;
-		y += min_ty * dy + ny * 0.1f;
+		//x += min_tx * dx + nx * 0.1f;
+		//y += min_ty * dy + ny * 0.1f;
 		if (nx != 0) vx = 0;
 		if (ny != 0) vy = 0;
 
@@ -1060,8 +1122,12 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 						else  if (koopas->GetState() == KOOPAS_STATE_DIE)
 						{
 							koopas->SetState(KOOPAS_STATE_KICK);
-							StartKick();
-							
+							StartKick();							
+						}
+						else if (koopas->GetState() == KOOPAS_STATE_FLY)
+						{
+							koopas->SetState(KOOPAS_STATE_WALKING);
+							vy = -MARIO_JUMP_DEFLECT_SPEED;
 						}
 
 					}
@@ -1091,7 +1157,7 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 							}
 							rua = koopas;
 						}
-						else if (koopas->GetState() == KOOPAS_STATE_WALKING)
+						else if (koopas->GetState() == KOOPAS_STATE_WALKING|| koopas->GetState() == KOOPAS_STATE_FLY)
 						{
 							if (untouchable == 0)
 							{
@@ -1176,6 +1242,65 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 						}
 					}
 				}
+			}
+			if (dynamic_cast<Plant*>(e->obj))
+			{
+				Plant* plant = dynamic_cast<Plant*>(e->obj);
+				{
+					if (e->nx != 0)
+					{
+						if (level == MARIO_LEVEL_RACCOON&& iswag&& this->nx * e->nx < 0)
+						{
+							{
+									//quay duoi
+									//koopas->SetState(KOOPAS_STATE_DIE);
+									//koopas->SetSpeed(this->nx * 0.1, -0.2);
+							}
+						}
+						else
+						{
+							if (untouchable == 0)
+							{
+								if (level > MARIO_LEVEL_SMALL)
+								{
+									level = MARIO_LEVEL_SMALL;
+									StartUntouchable();
+								}
+								else
+									SetState(MARIO_STATE_DIE);
+							}
+						}
+					}
+					if (e->ny != 0)
+					{
+						if (untouchable == 0)
+						{
+							if (level > MARIO_LEVEL_SMALL)
+							{
+								level = MARIO_LEVEL_SMALL;
+								StartUntouchable();
+							}
+							else
+								SetState(MARIO_STATE_DIE);
+						}
+					}
+				}
+			}
+			if (dynamic_cast<BallPlant*>(e->obj))
+			{
+				BallPlant* b = dynamic_cast<BallPlant*>(e->obj);
+
+				if (untouchable == 0)
+				{
+					if (level > MARIO_LEVEL_SMALL)
+					{
+						level = MARIO_LEVEL_SMALL;
+						StartUntouchable();
+					}
+					else
+						SetState(MARIO_STATE_DIE);
+				}
+				b->isattack = true;
 			}
 		}
 	}
