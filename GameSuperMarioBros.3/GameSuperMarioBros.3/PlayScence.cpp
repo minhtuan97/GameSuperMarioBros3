@@ -13,6 +13,9 @@
 #include "Ball.h"
 #include "Coin.h"
 #include "Plant.h"
+#include "BallPlant.h"
+#include "ItemSelect.h"
+#include "ScenceSelect.h"
 
 #define animationball	5
 
@@ -23,6 +26,8 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 {
 	key_handler = new CPlayScenceKeyHandler(this);
 	cam = Camera::GetInstance();
+	board = new Board(0, 0);
+	time_start = GetTickCount64();
 }
 
 /*
@@ -49,6 +54,8 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define	OBJECT_TYPE_WATERPIPE	7
 #define	OBJECT_TYPE_COIN	8
 #define	OBJECT_TYPE_PLANT	9
+#define	OBJECT_TYPE_ITEMSELECT	10
+#define OBJECT_TYPE_SCENCESELECT	11
 
 #define OBJECT_TYPE_PORTAL	50
 
@@ -170,7 +177,9 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = CMario::GetInstance();
 		obj->SetPosition(x, y);
 		player = (CMario*)obj;  
-
+		player->scence = id;
+		if (id == 0)
+			player->SetSpeed(0, 0);
 		DebugOut(L"[INFO] Player object created!\n");
 		break;
 	case OBJECT_TYPE_GOOMBA: 
@@ -180,12 +189,30 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new CGoomba(nx,type);
 		break;
 	}
+	case OBJECT_TYPE_SCENCESELECT:
+	{
+		int l = atoi(tokens[4].c_str());
+		int r = atoi(tokens[5].c_str());
+		int u = atoi(tokens[6].c_str());
+		int d = atoi(tokens[7].c_str());
+		int id = atoi(tokens[8].c_str());
+		obj = new ScenceSelect();
+		ScenceSelect* s = (ScenceSelect*)obj;
+		s->canleft = l;
+		s->canright = r;
+		s->candown = d;
+		s->canup = u;
+		s->id_scence = id;
+		listscenceselect.push_back(s);
+		s->SetPosition(x, y);
+		return;
+	}
 	case OBJECT_TYPE_BRICK: 
 	{
 		obj = new CBrick();
-		int r = atof(tokens[4].c_str());
-		int b = atof(tokens[5].c_str());
-		int type = atof(tokens[6].c_str());
+		int r = atoi(tokens[4].c_str());
+		int b = atoi(tokens[5].c_str());
+		int type = atoi(tokens[6].c_str());
 		CBrick* brick=(CBrick*)obj;
 		brick->right = r;
 		brick->bot = b;
@@ -214,14 +241,9 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_WATERPIPE:
 	{
 		obj = new WaterPipe();
-		//int r = atof(tokens[4].c_str());
-		//int b = atof(tokens[5].c_str());
-		//int type = atof(tokens[6].c_str());
 		WaterPipe* p = (WaterPipe*)obj;
 		int ani = atoi(tokens[4].c_str());
 		p->ani = ani;
-		//p->right = r;
-		//p->bot = b;
 		break;
 	}
 	case OBJECT_TYPE_ITEM:
@@ -261,6 +283,11 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_COIN:
 	{
 		obj = new Coin();
+		break;
+	}
+	case OBJECT_TYPE_ITEMSELECT:
+	{
+		obj = new ItemSelect();
 		break;
 	}
 	case OBJECT_TYPE_PORTAL:
@@ -364,12 +391,28 @@ void CPlayScene::Update(DWORD dt)
 	// We know that Mario is the first object in the list hence we won't add him into the colliable object list
 	// TO-DO: This is a "dirty" way, need a more organized way 
 
+	if (id == 0)
+	{
+		cam->SetCameraPosition(0,0);
+		board->SetPosition(8, 200);
+		player->Update(dt, &listscenceselect);
+		return;
+	}
+
 	vector<LPGAMEOBJECT> coObjects;
 	//for (size_t i = 1; i < objects.size(); i++)
 	//{
 	//	coObjects.push_back(objects[i]);
 	//}
 	grid->GetListOfObjects(&coObjects);
+	vector<BallPlant*> listballplant;
+	listballplant.clear();
+	vector<Coin*> listCoin;
+	listCoin.clear();
+	vector<CBrick*> listBrick;
+	listBrick.clear();
+	vector<Plant*> listPlant;
+	listPlant.clear();
 
 	for (size_t i = 0; i < objects.size(); i++)
 	{
@@ -408,6 +451,62 @@ void CPlayScene::Update(DWORD dt)
 		}
 			
 	}
+	for (size_t i = 0; i < objects.size(); i++)
+	{
+		if (dynamic_cast<BallPlant*>(objects.at(i)))
+		{
+			BallPlant* e = dynamic_cast<BallPlant*>(objects.at(i));
+			listballplant.push_back(e);
+		}		
+	}
+	for (size_t i = 0; i < listballplant.size(); i++)
+	{
+		if (listballplant.at(i)->isattack == true)
+			grid->deleteObject(listballplant.at(i));
+	}
+	//update coin
+	for (size_t i = 0; i < objects.size(); i++)
+	{
+		if (dynamic_cast<Coin*>(objects.at(i)))
+		{
+			Coin* e = dynamic_cast<Coin*>(objects.at(i));
+			listCoin.push_back(e);
+		}
+	}
+	for (size_t i = 0; i < listCoin.size(); i++)
+	{
+		if (listCoin.at(i)->iscoli == true)
+			grid->deleteObject(listCoin.at(i));
+	}
+
+	for (size_t i = 0; i < objects.size(); i++)
+	{
+		if (dynamic_cast<CBrick*>(objects.at(i)))
+		{
+			CBrick* e = dynamic_cast<CBrick*>(objects.at(i));
+			listBrick.push_back(e);
+		}
+	}
+	for (size_t i = 0; i < listBrick.size(); i++)
+	{
+		if (listBrick.at(i)->isColi == true)
+			grid->deleteObject(listBrick.at(i));
+	}
+
+	for (size_t i = 0; i < objects.size(); i++)
+	{
+		if (dynamic_cast<Plant*>(objects.at(i)))
+		{
+			Plant* e = dynamic_cast<Plant*>(objects.at(i));
+			listPlant.push_back(e);
+		}
+	}
+	for (size_t i = 0; i < listPlant.size(); i++)
+	{
+		if (listPlant.at(i)->isColi == true)
+			grid->deleteObject(listPlant.at(i));
+	}
+
 
 	// Update camera to follow mario
 	float cx, cy, mapheight, mapwidth;
@@ -457,10 +556,27 @@ void CPlayScene::Update(DWORD dt)
 	//cy -= SCREEN_HEIGHT / 2;
 
 	cam->SetCameraPosition((int)cx, (int)cy);
+	board->SetPosition((int)cx+8, 440);
 }
 
 void CPlayScene::Render()
 {
+	if (id == 0)
+	{
+
+		CSprites* sprites = CSprites::GetInstance();
+		sprites->Get(40050)->Draw(5, 20);
+		board->Render(player, 300 - (GetTickCount64() - time_start) / 1000);
+		if (player)
+		{
+			player->Render();
+		}
+		for (int i = 0; i < listscenceselect.size(); i++)
+		{
+			listscenceselect.at(i)->Render();
+		}
+		return;
+	}
 	map->DrawMap();
 	grid->GetListOfObjects(&objects);
 	vector<LPGAMEOBJECT> listobject;
@@ -505,6 +621,7 @@ void CPlayScene::Render()
 		for (int i = 0; i < player->listball.size(); i++)
 			player->listball.at(i)->Render();
 	}
+	board->Render(player, 300-(GetTickCount64()-time_start)/1000);
 }
 
 /*
@@ -514,9 +631,13 @@ void CPlayScene::Unload()
 {
 	for (int i = 0; i < objects.size(); i++)
 		delete objects[i];
+	for (int i = 0; i < listscenceselect.size(); i++)
+		delete listscenceselect[i];
 
 	objects.clear();
-	//player = NULL;
+	listscenceselect.clear();
+
+	player = NULL;
 
 	DebugOut(L"[INFO] Scene %s unloaded! \n", sceneFilePath);
 }
@@ -526,8 +647,68 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	//DebugOut(L"[INFO] KeyDown: %d\n", KeyCode);
 	CGame* game = CGame::GetInstance();
 	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
+	if (mario->scence == 0)
+	{
+		if (!(!mario->autoleft && !mario->autoright && !mario->autodown && !mario->autoup))
+			return;
+		switch (KeyCode)
+		{
+		case DIK_LEFT:
+			if (!mario->autoleft&&mario->canleft)
+			{
+				mario->autoleft = true;
+				mario->x_star = mario->x;
+			}
+			mario->autoright = false;
+			mario->autodown = false;
+			mario->autoup = false;
+			break;
+		case DIK_RIGHT:
+			mario->autoleft = false;
+			if (!mario->autoright&&mario->canright)
+			{
+				mario->autoright = true;
+				mario->x_star = mario->x;
+
+			}
+			mario->autodown = false;
+			mario->autoup = false;
+			break;
+		case DIK_UP:
+			mario->autoleft = false;
+			mario->autoright = false;
+			mario->autodown = false;
+			if (!mario->autoup&&mario->canup)
+			{
+				mario->autoup = true;
+				mario->y_start = mario->y;
+			}
+			break;
+		case DIK_DOWN:
+			mario->autoleft = false;
+			mario->autoright = false;
+			if (!mario->autodown&&mario->candown)
+			{
+				mario->autodown = true;
+				mario->y_start = mario->y;
+			}
+			mario->autoup = false;
+			break;
+		case DIK_S:
+			if (mario->scenceselect > 0)
+			{
+				CGame::GetInstance()->SwitchScene(mario->scenceselect);
+
+			}
+			break;
+		default:
+			break;
+		}
+		return;
+	}
 	switch (KeyCode)
 	{
+	
 	case DIK_X:
 		if (mario->isJump||mario->isjumpX)
 			break;
@@ -606,6 +787,7 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 {
 	CGame* game = CGame::GetInstance();
 	CMario* mario = ((CPlayScene*)scence)->GetPlayer();
+	if (mario->scence == 0) return;
 	switch (KeyCode)
 	{
 	case DIK_X:
@@ -639,7 +821,8 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 {
 	CGame *game = CGame::GetInstance();
 	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
-
+	if (mario->scence == 0)
+		return;
 	// disable control key when Mario die 
 	if (mario->GetState() == MARIO_STATE_DIE) return;
 	if (game->IsKeyDown(DIK_RIGHT))

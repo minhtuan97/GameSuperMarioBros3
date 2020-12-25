@@ -111,8 +111,8 @@ void Map::DrawMap()
 			a = TileMap[i][j];
 			if (a >= 0)
 				sprites->Get(50000 + a)->Draw(j * widthTile, i * heightTile);
-			//if(a==87)
-				//DebugOut(L"%d	%d\n",j * widthTile, i * heightTile);
+			/*if(a==0)
+				DebugOut(L"%d	%d\n",j * widthTile, i * heightTile);*/
 
 		}
 }

@@ -224,6 +224,7 @@
 #define MARIO_THROW_TIME 200
 #define MARIO_WAG_TIME 300
 
+#define MARIO_distanmove 32
 
 class CMario : public CGameObject
 {
@@ -231,10 +232,9 @@ class CMario : public CGameObject
 
 	int level;
 	int untouchable;
-	int money = 0;
 	DWORD untouchable_start;
 
-	float start_x;			// initial position of Mario at scene
+	float start_x;	
 	float start_y; 
 public: 
 	DWORD skid_start;
@@ -246,7 +246,23 @@ public:
 	vector<LPGAMEOBJECT> listweapon;
 	vector<LPGAMEOBJECT> listball;
 
+	bool autoleft = false;
+	bool autoright = false;
+	bool autoup = false;
+	bool autodown = false;
+
+	int scenceselect = -1;
+
+	bool canleft = false;
+	bool canright = false;
+	bool candown = false;
+	bool canup = false;
+
+	int scence = 0;
 	CKoopas* rua;
+	int money = 0;
+	int enymy = 0;
+	int m = 4;
 	bool isHold = false;
 	bool iscanHold = false;
 	bool isColiWithKoopas = false;
@@ -267,6 +283,8 @@ public:
 	bool frame2wag = false;
 	bool isfly = false;
 
+	float x_star = 0, y_start = 0;
+
 	CMario(float x = 0.0f, float y = 0.0f);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *colliable_objects = NULL);
 	virtual void Render();
@@ -286,5 +304,7 @@ public:
 	void ColitionWithItem(vector<LPGAMEOBJECT>* listObject = NULL);
 	void ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject = NULL);
 	static CMario* GetInstance();
+
+	bool AABB(LPGAMEOBJECT objects = NULL);
 
 };

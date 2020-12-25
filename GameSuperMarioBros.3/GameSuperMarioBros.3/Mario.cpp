@@ -18,6 +18,8 @@
 #include "Coin.h"
 #include "Plant.h"
 #include "BallPlant.h"
+#include "ItemSelect.h"
+#include "ScenceSelect.h"
 
 #define TYPE_NAM	1
 #define TYPE_LA	2
@@ -26,7 +28,7 @@ CMario* CMario::__instance = NULL;
 
 CMario::CMario(float x, float y) : CGameObject()
 {
-	level = MARIO_LEVEL_BIG;
+	level = MARIO_LEVEL_SMALL;
 	untouchable = 0;
 	SetState(MARIO_STATE_IDLE);
 
@@ -40,6 +42,64 @@ CMario::CMario(float x, float y) : CGameObject()
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
+	if (scence == 0)
+	{
+		ScenceSelect* s = nullptr;
+		for (int i = 0; i < coObjects->size(); i++)
+		{
+			if (AABB(coObjects->at(i)))
+			{
+				s = dynamic_cast<ScenceSelect*> (coObjects->at(i));
+				this->canleft = s->canleft;
+				this->canright = s->canright;
+				this->candown = s->candown;
+				this->canup = s->canup;
+				this->scenceselect = s->id_scence;
+				break;
+			}
+			else
+			{
+				this->scenceselect = -1;
+			}
+		}
+		if (autoleft)
+		{
+			x -= 0.5;
+			if (x_star-x >= MARIO_distanmove)
+			{
+				autoleft = false;
+				x_star = x;
+			}
+		}
+		if (autoright)
+		{
+			x += 0.5;
+			if (x- x_star >= MARIO_distanmove)
+			{
+				autoright = false;
+				x_star = x;
+			}
+		}
+		if (autoup)
+		{
+			y -= 0.5;
+			if (y_start - y >= MARIO_distanmove)
+			{
+				autoup = false;
+				y_start = y;
+			}
+		}
+		if (autodown)
+		{
+			y += 0.5;
+			if (y - y_start >= MARIO_distanmove)
+			{
+				autodown = false;
+				y_start = y;
+			}
+		}
+		return;
+	}
 	// Calculate dx, dy 
 	CGameObject::Update(dt);
 
@@ -142,6 +202,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 void CMario::Render()
 {
+
 	int ani = -1;
 	if (state == MARIO_STATE_DIE)
 		ani = MARIO_ANIMATION_SMALL_DIE;
@@ -500,7 +561,10 @@ void CMario::Render()
 	//	animation_set->at(ani)->Render(x-8, y, alpha);
 	//else
 	//DebugOut(L"fly=%d, ani=%d, isbounus=%d\n", isfly, ani,isBonusvy);
-	
+	if (scence == 0)
+	{
+		ani = 136;
+	}
 	animation_set->at(ani)->Render(x, y, alpha);
 
 	RenderBoundingBox();
@@ -633,6 +697,13 @@ void CMario::GetBoundingBox(float &left, float &top, float &right, float &bottom
 		right = x + MARIO_SMALL_BBOX_WIDTH;
 		bottom = y + MARIO_SMALL_BBOX_HEIGHT;
 	}
+	if (scence == 0)
+	{
+		left = x;
+		top = y;
+		right = x + 14;
+		bottom = y + 16;
+	}
 }
 
 void CMario::DecreasePower()
@@ -659,9 +730,11 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 	vector<LPGAMEOBJECT> listbrick;
 	vector<LPGAMEOBJECT> listquestionbrick;
 	vector<LPGAMEOBJECT> listwaterpipe;
+	vector<LPGAMEOBJECT> listItemSelect;
 	listbox.clear();
 	listbrick.clear();
 	listquestionbrick.clear();
+	listItemSelect.clear();
 
 	for (int i = 0; i < listObject->size(); i++)
 	{
@@ -673,7 +746,8 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 			listquestionbrick.push_back(listObject->at(i));
 		if (dynamic_cast<WaterPipe*>(listObject->at(i)))
 			listwaterpipe.push_back(listObject->at(i));
-
+		if (dynamic_cast<ItemSelect*>(listObject->at(i)))
+			listItemSelect.push_back(listObject->at(i));
 	}
 
 	vector<LPCOLLISIONEVENT> coEvents;
@@ -689,6 +763,7 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 		CalcPotentialCollisions(&listbrick, coEvents);
 		CalcPotentialCollisions(&listquestionbrick, coEvents);
 		CalcPotentialCollisions(&listwaterpipe, coEvents);
+		CalcPotentialCollisions(&listItemSelect, coEvents);
 	}
 
 	// No collision occured, proceed normally
@@ -727,6 +802,11 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 			{
 				CPortal* p = dynamic_cast<CPortal*>(e->obj);
 				CGame::GetInstance()->SwitchScene(p->GetSceneId());
+			}
+			if (dynamic_cast<ItemSelect*>(e->obj))
+			{
+				ItemSelect* p = dynamic_cast<ItemSelect*>(e->obj);
+				p->isColi = true;
 			}
 			if (dynamic_cast<CBrick*>(e->obj))//if brick
 			{
@@ -1004,6 +1084,7 @@ void CMario::ColitionWithItem(vector<LPGAMEOBJECT>* listObject)
 	CalcPotentialCollisions(&listcoin, coEvents2);
 	if (coEvents2.size() != 0)
 	{
+		DebugOut(L"size%d\n", coEvents2.size());
 
 		for (UINT i = 0; i < coEvents2.size(); i++)
 		{
@@ -1017,12 +1098,12 @@ void CMario::ColitionWithItem(vector<LPGAMEOBJECT>* listObject)
 			}
 		}
 	}
-	for (int i = 0; i < listcoin.size(); i++)
-	{
-		Coin* coin = dynamic_cast<Coin*>(listcoin.at(i));
-		if (coin->iscoli)
-			Grid::GetInstance()->deleteObject(coin);
-	}
+	//for (int i = 0; i < listcoin.size(); i++)
+	//{
+	//	Coin* coin = dynamic_cast<Coin*>(listcoin.at(i));
+	//	if (coin->iscoli)
+	//		Grid::GetInstance()->deleteObject(coin);
+	//}
 	for (UINT i = 0; i < coEvents2.size(); i++) delete coEvents2[i];
 
 }
@@ -1091,14 +1172,14 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 		float rdx = 0;
 		float rdy = 0;
 
-		// TODO: This is a very ugly designed function!!!!
+		 //TODO: This is a very ugly designed function!!!!
 		FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nx, ny, rdx, rdy);
-		//x += min_tx * dx + nx * 0.1f;
-		//y += min_ty * dy + ny * 0.1f;
+		//x += min_tx * dx + nx * 0.2f;
+		//y += min_ty * dy + ny * 0.2f;
 		if (nx != 0) vx = 0;
 		if (ny != 0) vy = 0;
 
-
+		//coEventsResult = coEvents;
 		//
 		// Collision logic with other objects
 		//
@@ -1129,6 +1210,7 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 							koopas->SetState(KOOPAS_STATE_WALKING);
 							vy = -MARIO_JUMP_DEFLECT_SPEED;
 						}
+						enymy += 100;
 
 					}
 					else if (e->nx != 0)
@@ -1181,6 +1263,7 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 				// jump on top >> kill Goomba and deflect a bit 
 				if (e->ny < 0)
 				{
+					enymy += 100;
 					if (goomba->type == 1)
 					{
 						//goomba->type == 0;
@@ -1221,11 +1304,19 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 								vy -= 0.01;
 							}
 						}
-						//else
-						//{
-						//	goomba->SetState(GOOMBA_STATE_DIE);
-						//	goomba->iskilltop = true;
-						//}
+						else
+						{
+							if (goomba->GetState() != GOOMBA_STATE_DIE)
+							{
+								if (level > MARIO_LEVEL_SMALL)
+								{
+									level = MARIO_LEVEL_SMALL;
+									StartUntouchable();
+								}
+								else
+									SetState(MARIO_STATE_DIE);
+							}
+						}
 
 					}
 					else if (untouchable == 0)
@@ -1247,15 +1338,16 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 			{
 				Plant* plant = dynamic_cast<Plant*>(e->obj);
 				{
+					//DebugOut(L"e.nx=%d\n", e->nx);
+					//DebugOut(L"e.ny=%d\n", e->ny);
 					if (e->nx != 0)
 					{
-						if (level == MARIO_LEVEL_RACCOON&& iswag&& this->nx * e->nx < 0)
+						if (level == MARIO_LEVEL_RACCOON && iswag)
 						{
 							{
-									//quay duoi
-									//koopas->SetState(KOOPAS_STATE_DIE);
-									//koopas->SetSpeed(this->nx * 0.1, -0.2);
+								plant->isColi = true;
 							}
+							enymy += 100;
 						}
 						else
 						{
@@ -1314,6 +1406,27 @@ CMario* CMario::GetInstance()
 	if (__instance == NULL) __instance = new CMario();
 	return __instance;
 }
+
+bool CMario::AABB(LPGAMEOBJECT objects)
+{
+	float left, top, right, bot;
+	float l, t, r, b;
+	GetBoundingBox(l, t, r, b);
+	objects->GetBoundingBox(left, top, right, bot);
+	if (l < right &&
+		r > left &&
+		t < bot &&
+		b > top) {
+		return true;
+	}
+	return false;
+}
+
+//bool CMario::AABB(vector<LPGAMEOBJECT>* colliable_objects)
+//{
+//
+//	return false;
+//}
 
 /*
 	Reset Mario status to the beginning state of a scene

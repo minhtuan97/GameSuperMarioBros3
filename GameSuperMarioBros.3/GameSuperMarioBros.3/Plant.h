@@ -19,6 +19,7 @@ class Plant:public CGameObject
 	virtual void Render();
 
 public:
+	bool isColi = false;
 	DWORD attack_start;
 	DWORD wait_start;
 	int nx = 1;

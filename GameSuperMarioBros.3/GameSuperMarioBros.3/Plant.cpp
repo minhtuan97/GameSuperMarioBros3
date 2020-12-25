@@ -112,6 +112,7 @@ void Plant::Render()
 		break;
 	}
 	animation_set->at(ani)->Render(x, y);
+	RenderBoundingBox();
 }
 
 Plant::Plant(int type, float x, float y)

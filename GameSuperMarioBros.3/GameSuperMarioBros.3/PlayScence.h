@@ -11,6 +11,7 @@
 #include "Camera.h"
 #include "define.h"
 #include "Grid.h"
+#include "Board.h"
 
 class CPlayScene: public CScene
 {
@@ -19,9 +20,12 @@ protected:
 	Grid* grid;
 	Camera* cam;
 	CMario *player;					// A play scene has to have player, right? 
+	Board* board;
 
 	vector<LPGAMEOBJECT> objects;	
 	vector<LPGAMEOBJECT> objects_item;
+	vector<LPGAMEOBJECT> listscence;
+	vector<LPGAMEOBJECT> listscenceselect;
 
 
 	void _ParseSection_TEXTURES(string line);
@@ -32,6 +36,8 @@ protected:
 	void _ParseSection_MAP(string line);
 	
 public: 
+	DWORD64 time_start = 0;
+
 	CPlayScene(int id, LPCWSTR filePath);
 
 	virtual void Load();

@@ -19,16 +19,17 @@ void BallPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	x += dx;
 	y += dy;
 	
-	if(isattack)
-		Grid::GetInstance()->deleteObject(this);
+	
 
 	float xcam = Camera::GetInstance()->GetCameraPosition().x;
 	float ycam = Camera::GetInstance()->GetCameraPosition().y;
 
-	//if (x > xcam && x<xcam + SCREEN_WIDTH && y>ycam && y < ycam + SCREEN_HEIGHT)
-	//	//	Grid::GetInstance()->Update(this);
-	//	;
-	//else
+	if (x > xcam && x<xcam + SCREEN_WIDTH && y>ycam && y < ycam + SCREEN_HEIGHT-16)
+		Grid::GetInstance()->Update(this);
+	else
+		Grid::GetInstance()->deleteObject(this);
+
+	//if (isattack)
 	//	Grid::GetInstance()->deleteObject(this);
 
 }

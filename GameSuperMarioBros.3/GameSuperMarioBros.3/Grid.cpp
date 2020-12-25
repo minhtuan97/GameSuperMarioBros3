@@ -128,19 +128,30 @@ void Grid::ClearObject()
 
 void Grid::deleteObject(LPGAMEOBJECT object)
 {
-	int cell_x = 0, cell_y = 0;
-	//if (dynamic_cast<Item*>(object))
-	//{
-	//	Item* item = dynamic_cast<Item*>(object);
-	//	cell_x = floor(item->x_de / cellwidth);
-	//	cell_y = floor(item->y_de / cellheight);
-	//}
-	//else
-	//{
-		cell_x = floor((float)object->x / cellwidth);
-		cell_y = floor((float)object->y / cellheight);
-	//}
-		cells[cell_x][cell_y].earseObj(object);
+//	int cell_x = 0, cell_y = 0;
+	////if (dynamic_cast<Item*>(object))
+	////{
+	////	Item* item = dynamic_cast<Item*>(object);
+	////	cell_x = floor(item->x_de / cellwidth);
+	////	cell_y = floor(item->y_de / cellheight);
+	////}
+	////else
+	////{
+	//	cell_x = floor((float)object->x / cellwidth);
+	//	cell_y = floor((float)object->y / cellheight);
+	////}
+	//	cells[cell_x][cell_y].earseObj(object);
+		
+		float left, top, right, bot;
+		object->GetBoundingBox(left, top, right, bot);
+		int cell_x_start = floor(left / cellwidth);
+		int cell_x_end = floor(right / cellwidth);
+		int cell_y_start = floor(top / cellheight);
+		int cell_y_end = floor(bot / cellheight);
+
+		for (int i = cell_x_start; i <= cell_x_end; i++)
+			for (int j = cell_y_start; j <= cell_y_end; j++)
+				cells[i][j].earseObj(object);
 
 }
 

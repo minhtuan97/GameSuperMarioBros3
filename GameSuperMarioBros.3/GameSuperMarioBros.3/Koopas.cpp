@@ -126,7 +126,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			for (UINT i = 0; i < coEventsResult.size(); i++)
 			{
 				LPCOLLISIONEVENT e = coEventsResult[i];
-				if (dynamic_cast<WaterPipe*>(e->obj) || dynamic_cast<CBrick*>(e->obj) || dynamic_cast<Box*>(e->obj))
+				if (dynamic_cast<WaterPipe*>(e->obj)  || dynamic_cast<Box*>(e->obj))
 				{
 					if (nx > 0)
 					{
@@ -137,6 +137,24 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 						vx = -KOOPAS_KICK_SPEED;
 					}
 					//DebugOut(L"nx=%d, vx=%f\n", nx, vx);			
+				}
+				if(dynamic_cast<CBrick*>(e->obj))
+				{
+					CBrick* b = dynamic_cast<CBrick*>(e->obj);
+					if (nx != 0)
+					{
+						if (nx > 0)
+						{
+							vx = KOOPAS_KICK_SPEED;
+						}
+						else if (nx < 0)
+						{
+							vx = -KOOPAS_KICK_SPEED;
+						}
+						if (b->type == BRICK3)
+							b->isColi = true;
+					}
+			
 				}
 				if (dynamic_cast<QuestionBrick*>(e->obj))
 				{
@@ -330,9 +348,9 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	if (x > xcam && x<xcam + SCREEN_WIDTH - KOOPAS_BBOX_WIDTH&& y>ycam && y < ycam + SCREEN_HEIGHT-KOOPAS_BBOX_HEIGHT)
 		Grid::GetInstance()->Update(this);
 
-	//xoa khỏi khi ra khoi map theo trục y
-	if (this->y<ycam || this->y>ycam + SCREEN_HEIGHT - KOOPAS_BBOX_HEIGHT)
-		Grid::GetInstance()->deleteObject(this);
+	////xoa khỏi khi ra khoi map theo trục y
+	//if (this->y<ycam || this->y>ycam + SCREEN_HEIGHT - KOOPAS_BBOX_HEIGHT)
+	//	Grid::GetInstance()->deleteObject(this);
 }
 
 void CKoopas::Render()
