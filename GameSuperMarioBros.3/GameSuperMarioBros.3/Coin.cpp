@@ -1,5 +1,15 @@
 #include "Coin.h"
 
+Coin::Coin(float x, float y)
+{
+	this->x = x;
+	this->y = y;
+	int ani_set_id = 26;
+	CAnimationSets* animation_sets = CAnimationSets::GetInstance();
+	LPANIMATION_SET ani_set = animation_sets->Get(ani_set_id);
+	SetAnimationSet(ani_set);
+}
+
 void Coin::Render()
 {
 	animation_set->at(0)->Render(x, y);

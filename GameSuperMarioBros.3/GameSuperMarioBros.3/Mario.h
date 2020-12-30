@@ -242,9 +242,13 @@ public:
 	DWORD hold_start;
 	DWORD throw_start;
 	DWORD wag_start;
+	
+	bool iscard = false;
+	int typecard = false;
 
 	vector<LPGAMEOBJECT> listweapon;
 	vector<LPGAMEOBJECT> listball;
+	vector<LPGAMEOBJECT> listcard;
 
 	bool autoleft = false;
 	bool autoright = false;
@@ -306,5 +310,6 @@ public:
 	static CMario* GetInstance();
 
 	bool AABB(LPGAMEOBJECT objects = NULL);
+	void Unload();
 
 };

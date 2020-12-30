@@ -20,6 +20,7 @@
 #include "BallPlant.h"
 #include "ItemSelect.h"
 #include "ScenceSelect.h"
+#include "SwitchBlock.h"
 
 #define TYPE_NAM	1
 #define TYPE_LA	2
@@ -176,6 +177,22 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 				SetPosition(x + 8, y);
 		iswag = false;
 	}
+	
+	vector<LPGAMEOBJECT> listPort;
+	listPort.clear();
+	for (int i = 0; i < coObjects->size(); i++)
+	{
+		if (dynamic_cast<CPortal*>(coObjects->at(i)))
+			listPort.push_back(coObjects->at(i));
+	}
+	for (int i = 0; i < listPort.size(); i++)
+	{
+		if (AABB(listPort.at(i)))
+		{
+				CPortal* p = dynamic_cast<CPortal*>(listPort.at(i));
+				CGame::GetInstance()->SwitchScene(p->GetSceneId());
+		}
+	}
 
 	if (!ColitionWithObjectStatic(coObjects))
 	{
@@ -202,7 +219,8 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 void CMario::Render()
 {
-
+	if (this == NULL)
+		return;
 	int ani = -1;
 	if (state == MARIO_STATE_DIE)
 		ani = MARIO_ANIMATION_SMALL_DIE;
@@ -623,11 +641,16 @@ void CMario::SetState(int state)
 		isJump = true;		
 		if (ispressX == true)
 			vy = -0.23f;
+
 		else
+		{
 			if (isBonusvy)
 			{
 				vy -= MARIO_JUMP_SPEED_Y;
 			}
+
+			
+		}
 		iswalking = false;
 		break;
 	case MARIO_STATE_RUNJUMP_LEFT:
@@ -726,15 +749,19 @@ void CMario::IncreasePower()
 
 bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 {
+
 	vector<LPGAMEOBJECT> listbox;
 	vector<LPGAMEOBJECT> listbrick;
 	vector<LPGAMEOBJECT> listquestionbrick;
 	vector<LPGAMEOBJECT> listwaterpipe;
 	vector<LPGAMEOBJECT> listItemSelect;
+	vector<LPGAMEOBJECT> listP;
+
 	listbox.clear();
 	listbrick.clear();
 	listquestionbrick.clear();
 	listItemSelect.clear();
+	listP.clear();
 
 	for (int i = 0; i < listObject->size(); i++)
 	{
@@ -748,6 +775,8 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 			listwaterpipe.push_back(listObject->at(i));
 		if (dynamic_cast<ItemSelect*>(listObject->at(i)))
 			listItemSelect.push_back(listObject->at(i));
+		if (dynamic_cast<SwitchBlock*>(listObject->at(i)))
+			listP.push_back(listObject->at(i));
 	}
 
 	vector<LPCOLLISIONEVENT> coEvents;
@@ -764,6 +793,7 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 		CalcPotentialCollisions(&listquestionbrick, coEvents);
 		CalcPotentialCollisions(&listwaterpipe, coEvents);
 		CalcPotentialCollisions(&listItemSelect, coEvents);
+		CalcPotentialCollisions(&listP, coEvents);
 	}
 
 	// No collision occured, proceed normally
@@ -798,15 +828,26 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 		for (UINT i = 0; i < coEventsResult.size(); i++)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
-			if (dynamic_cast<CPortal*>(e->obj))
-			{
-				CPortal* p = dynamic_cast<CPortal*>(e->obj);
-				CGame::GetInstance()->SwitchScene(p->GetSceneId());
-			}
+			//if (dynamic_cast<CPortal*>(e->obj))
+			//{
+			//	CPortal* p = dynamic_cast<CPortal*>(e->obj);
+			//	CGame::GetInstance()->SwitchScene(p->GetSceneId());
+			//}
 			if (dynamic_cast<ItemSelect*>(e->obj))
 			{
 				ItemSelect* p = dynamic_cast<ItemSelect*>(e->obj);
 				p->isColi = true;
+				listcard.push_back(p);
+			}
+			if (dynamic_cast<SwitchBlock*>(e->obj))
+			{
+				SwitchBlock* p = dynamic_cast<SwitchBlock*>(e->obj);
+				if (!p->isColi)
+				{
+					p->isColi = true;
+					p->SetPosition(p->x, p->y + 8);
+				}
+
 			}
 			if (dynamic_cast<CBrick*>(e->obj))//if brick
 			{
@@ -855,6 +896,15 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 							//state = MARIO_STATE_WALKING_LEFT;
 							//DebugOut(L"Vao ham vx<0, state=%d\n", state);
 						}
+					}
+				}
+				else if (e->ny > 0)
+				{
+					if (brick->type == 5&&!brick->isP)
+					{
+						brick->isP = true;
+						brick->SetSpeed(0, -0.15);
+
 					}
 				}
 			}
@@ -1420,6 +1470,11 @@ bool CMario::AABB(LPGAMEOBJECT objects)
 		return true;
 	}
 	return false;
+}
+
+void CMario::Unload()
+{
+	__instance = NULL;
 }
 
 //bool CMario::AABB(vector<LPGAMEOBJECT>* colliable_objects)

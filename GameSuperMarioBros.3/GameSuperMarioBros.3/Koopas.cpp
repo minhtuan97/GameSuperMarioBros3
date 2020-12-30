@@ -341,6 +341,9 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		break;
 	}
 	
+	DebugOut(L"koopas x=%f, y=%f\n", x, y);
+
+
 	//goomba ra khoi camera con loi
 	float xcam = Camera::GetInstance()->GetCameraPosition().x;
 	float ycam = Camera::GetInstance()->GetCameraPosition().y;
@@ -349,8 +352,8 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		Grid::GetInstance()->Update(this);
 
 	////xoa khỏi khi ra khoi map theo trục y
-	//if (this->y<ycam || this->y>ycam + SCREEN_HEIGHT - KOOPAS_BBOX_HEIGHT)
-	//	Grid::GetInstance()->deleteObject(this);
+	else if (this->y<ycam || this->y>ycam + SCREEN_HEIGHT - KOOPAS_BBOX_HEIGHT)
+		Grid::GetInstance()->deleteObject(this);
 }
 
 void CKoopas::Render()

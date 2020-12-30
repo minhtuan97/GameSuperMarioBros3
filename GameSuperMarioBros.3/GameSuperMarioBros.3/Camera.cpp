@@ -5,6 +5,7 @@ Camera* Camera::__instance = NULL;
 Camera::Camera()
 {
 	cameraPosition = D3DXVECTOR3(0, 0, 0);
+	Setwidthheight(260,180);
 }
 
 Camera* Camera::GetInstance()
@@ -34,6 +35,21 @@ void Camera::Setwidthheight(int x, int y)
 {
 	this->width = x;
 	this->height = y;
+}
+
+std::vector<LPGAMEOBJECT> Camera::GetlistinCamera(vector<LPGAMEOBJECT> obj)
+{
+	vector<LPGAMEOBJECT> list;
+	list.clear();
+	float x = cameraPosition.x;
+	float y = cameraPosition.y;
+
+	for (int i = 0; i < obj.size(); i++)
+	{
+		if (obj.at(i)->x > x && obj.at(i)->x <x + width && obj.at(i)->y >y && obj.at(i)->y < y + height)
+			list.push_back(obj.at(i));
+	}
+	return list;
 }
 
 D3DXVECTOR3 Camera::GetCameraPosition()

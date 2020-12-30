@@ -41,7 +41,7 @@ void Map::_ParseSection_DATA(string line)
 	for (int j = 0; j < ColumnMap; j++)
 	{
 		TileMap[linedata][j] = atoi(tokens[j].c_str());
-		DebugOut(L"xuat : %d", TileMap[linedata][j]);
+		//DebugOut(L"xuat : %d", TileMap[linedata][j]);
 	}
 	linedata++;
 }
@@ -95,16 +95,18 @@ void Map::LoadFile(LPCWSTR filename, int idTextureMap)
 void Map::DrawMap()
 {
 	Camera* cam = Camera::GetInstance();
-	int tile_column = (int) SCREEN_WIDTH / widthTile+2;
-	int tile_row = RowTile;
+	int tile_column = (int)SCREEN_WIDTH / widthTile + 2;
+	int tile_row = (int) 180 / heightTile+2;
+	//int tile_row = RowTile;
 	float mx, my;
 	mx = cam->GetCameraPosition().x;
 	my = cam->GetCameraPosition().y;
 	int tile_start_column = (int)mx / widthTile;
+	int tile_start_row = (int)my / heightTile;
 	CSprites* sprites = CSprites::GetInstance();
 	int a = -1;
 	//DebugOut(L"bat dau\n");
-	for (int i = 0; i < RowMap; i++)
+	for (int i = tile_start_row; i < tile_row+ tile_start_row; i++)
 		//for (int j = 0; j < ColumnMap; j++)
 		for (int j = tile_start_column; j < tile_column+ tile_start_column; j++)
 		{
@@ -123,9 +125,7 @@ void Map::Clear()
 		return;
 	else
 	{
-		/*for (int i = 0; i < RowMap; i++)
-			delete[] TileMap[i];
-		delete[] TileMap;*/
+		delete _instance;
 		_instance = NULL;
 	}
 }

@@ -19,6 +19,7 @@ public:
 	Font life;
 	Power power;
 	Font scence;
+	
 
 	float x, y;
 

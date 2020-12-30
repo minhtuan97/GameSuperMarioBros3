@@ -142,37 +142,63 @@ void Grid::deleteObject(LPGAMEOBJECT object)
 	////}
 	//	cells[cell_x][cell_y].earseObj(object);
 		
-		float left, top, right, bot;
-		object->GetBoundingBox(left, top, right, bot);
-		int cell_x_start = floor(left / cellwidth);
-		int cell_x_end = floor(right / cellwidth);
-		int cell_y_start = floor(top / cellheight);
-		int cell_y_end = floor(bot / cellheight);
+		//float left, top, right, bot;
+		//object->GetBoundingBox(left, top, right, bot);
+		//int cell_x_start = floor(left / cellwidth);
+		//int cell_x_end = floor(right / cellwidth);
+		//int cell_y_start = floor(top / cellheight);
+		//int cell_y_end = floor(bot / cellheight);
 
-		for (int i = cell_x_start; i <= cell_x_end; i++)
-			for (int j = cell_y_start; j <= cell_y_end; j++)
-				cells[i][j].earseObj(object);
+		for (int i = 0; i < cell_cloumn; i++)
+			for (int j = 0; j < cell_row; j++)
+			{
+				for (int k = 0; k < cells[i][j].GetlistObject().size(); k++)
+				{
+					LPGAMEOBJECT e = cells[i][j].GetlistObject().at(k);
+					//int cell_x = floor((float)object->x / cellwidth);
+					//int cell_y = floor((float)object->y / cellheight);
+					if (e == object)
+					{
+						cells[i][j].earseObj(object);
+					}
+				}
+			}
+		//for (int i = cell_x_start; i <= cell_x_end; i++)
+		//	for (int j = cell_y_start; j <= cell_y_end; j++)
+		//		cells[i][j].earseObj(object);
 
 }
 
-void Grid::Update(LPGAMEOBJECT object)
+void Grid::Update(LPGAMEOBJECT object)//can sua update grid
 {
+	bool isUpdate = false;
+	float left, top, right, bot;
+	object->GetBoundingBox(left, top, right, bot);
+	int cell_x_start = floor(left / cellwidth);
+	int cell_x_end = floor(right / cellwidth);
+	int cell_y_start = floor(top / cellheight);
+	int cell_y_end = floor(bot / cellheight);
+
 	for (int i = 0; i < cell_cloumn; i++)
 		for (int j = 0; j < cell_row; j++)
 		{
 			for (int k = 0; k < cells[i][j].GetlistObject().size(); k++)
 			{
-				LPGAMEOBJECT e;
-				e = cells[i][j].GetlistObject().at(k);
-				int cell_x = floor((float)object->x / cellwidth);
-				int cell_y = floor((float)object->y / cellheight);
-				if (e == object && (cell_x != i || cell_y != j))
+				LPGAMEOBJECT e = cells[i][j].GetlistObject().at(k);
+				//int cell_x = floor((float)object->x / cellwidth);
+				//int cell_y = floor((float)object->y / cellheight);
+				if (e == object && !(i>= cell_x_start&&i<= cell_x_end && j>= cell_y_start&&j<= cell_y_end))
 				{
 					cells[i][j].earseObj(object);
-					addObject(object);
-					DebugOut(L"da update grid cho object\n");
-					return;
+					isUpdate = true;
+					//addObject(object);
+					//DebugOut(L"da update grid cho object\n");
+					//return;
 				}
 			}
 		}
+	if (isUpdate)
+	{
+		addObject(object);
+	}
 }

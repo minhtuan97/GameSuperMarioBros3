@@ -24,9 +24,14 @@ protected:
 
 	vector<LPGAMEOBJECT> objects;	
 	vector<LPGAMEOBJECT> objects_item;
-	vector<LPGAMEOBJECT> listscence;
 	vector<LPGAMEOBJECT> listscenceselect;
 
+	string s1 = "COURSE CLEAR";
+	string s2 = "YOU GOT A CARD";
+	Font string1;
+	Font string2;
+	Font card;
+	bool iscard = false;
 
 	void _ParseSection_TEXTURES(string line);
 	void _ParseSection_SPRITES(string line);

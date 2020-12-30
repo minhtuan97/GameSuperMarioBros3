@@ -1,4 +1,5 @@
 #include "Board.h"
+#include "ItemSelect.h"
 
 string Board::FillNumber(string s, UINT MaxNumber)
 {
@@ -40,6 +41,11 @@ void Board::Render(CMario* mario, int time)
 	enemy.Draw(x + 52, y + 15, FillNumber(std::to_string(mario->enymy), 7));
 	scence.Draw(x + 37, y + 8, FillNumber(std::to_string(mario->scence), 1));
 
+	for (int i = 0; i < mario->listcard.size(); i++)
+	{
+		ItemSelect* s = dynamic_cast<ItemSelect*>(mario->listcard.at(i));
+		sprites->Get(40044+s->type)->Draw(x + 160+i*24, y);
+	}
 }
 
 Board::~Board()

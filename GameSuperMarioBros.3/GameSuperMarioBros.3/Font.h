@@ -11,5 +11,6 @@ public:
 	Font(float x, float y, std::string s);
 	~Font();
 	void Draw(float x, float y, std::string s);
+	void Draw(float x, float y, int type);
 };
 

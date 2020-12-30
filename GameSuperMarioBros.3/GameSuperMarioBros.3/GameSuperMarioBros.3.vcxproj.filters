@@ -114,6 +114,9 @@
     <ClInclude Include="ScenceSelect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SwitchBlock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animations.cpp">
@@ -207,6 +210,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ScenceSelect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SwitchBlock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

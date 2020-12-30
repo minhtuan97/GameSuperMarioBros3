@@ -1,5 +1,8 @@
 #include "ItemSelect.h"
 #include "Utils.h"
+#include "Camera.h"
+#include "Grid.h"
+#include "Mario.h"
 
 void ItemSelect::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 {
@@ -15,7 +18,7 @@ void ItemSelect::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	x += dx;
 	y += dy;
 
-	if (GetTickCount64() - ani_start > RENDER_TIME)
+	if (GetTickCount64() - ani_start > RENDER_TIME&&!isColi)
 	{
 		ani_start = GetTickCount64();
 		type++;
@@ -24,6 +27,15 @@ void ItemSelect::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	}
 	if (isColi)
 		vy = -0.1f;
+
+	float xcam = Camera::GetInstance()->GetCameraPosition().x;
+	float ycam = Camera::GetInstance()->GetCameraPosition().y;
+	if (y<ycam)
+	{
+		CMario::GetInstance()->iscard = true;
+		CMario::GetInstance()->typecard = type;
+		Grid::GetInstance()->deleteObject(this);
+	}
 }
 
 void ItemSelect::Render()

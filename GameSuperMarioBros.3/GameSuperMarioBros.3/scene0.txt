@@ -656,7 +656,6 @@ ani_id	sprite1_id	time1	sprite2_id	time2
 # type: 0 = Mario , 1 = Brick, 2 = Goomba, 3 = Koopas
 # MARIO
 0	24	54	2
-#0	50	54	2
 
 11	24	54	0	0	1	0	0	-1
 11	58	54	0	1	0	1	0	-1
@@ -688,5 +687,5 @@ ani_id	sprite1_id	time1	sprite2_id	time2
 
 # --- SCENE PORTAL ----
 # type	l	t	ani_set_id	r	b	scene_id
-#50	115	98	0	148	150	1
+#50	2256	96	0	2270	113	2
 

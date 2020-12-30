@@ -5,6 +5,7 @@
 #include "WaterPipe.h"
 #include "Camera.h"
 #include "define.h"
+#include "Utils.h"
 
 CGoomba::CGoomba(int nx, int type)
 {
@@ -149,15 +150,17 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			}
 		}
 	}
+
+	DebugOut(L"gomba x=%f, y=%f\n", x, y);
 	//goomba ra khoi camera
 	float xcam = Camera::GetInstance()->GetCameraPosition().x;
 	float ycam = Camera::GetInstance()->GetCameraPosition().y;
 	
-	if (x>xcam || x<xcam + SCREEN_WIDTH - BRICK_BBOX_WIDTH || y>ycam || y<ycam + SCREEN_HEIGHT)
+	if (x>xcam && x<xcam + SCREEN_WIDTH - BRICK_BBOX_WIDTH && y>ycam && y<ycam + SCREEN_HEIGHT- GOOMBA_BBOX_HEIGHT)
 		Grid::GetInstance()->Update(this);
 	
 	//xoa khỏi khi ra khoi map theo trục y
-	if (this->y<ycam || this->y>ycam + SCREEN_HEIGHT - GOOMBA_BBOX_HEIGHT)
+	else if (this->y <= ycam || this->y >= ycam + SCREEN_HEIGHT - GOOMBA_BBOX_HEIGHT)
 		Grid::GetInstance()->deleteObject(this);
 
 		

@@ -1,5 +1,7 @@
 #pragma once
 #include "GameObject.h"
+#include "Font.h"
+#include <string>
 #define RENDER_TIME 200
 
 class ItemSelect:public CGameObject

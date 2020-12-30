@@ -33,7 +33,7 @@ void Font::Draw(float x, float y, std::string s)
 		}
 		if (s[i] >= 'A' && s[i] <= 'Z')
 		{
-			sprites->Get(40016 +( s[i] - 'A'))->Draw(x+i*8, y);
+			sprites->Get(40017 +( s[i] - 'A'))->Draw(x+i*8, y);
 		}
 		else
 			if (s[i] >= '0' && s[i] <= '9')
@@ -41,4 +41,13 @@ void Font::Draw(float x, float y, std::string s)
 				sprites->Get(40007 +(s[i] - '0'))->Draw(x + i * 8, y);
 			}
 	}
+}
+
+void Font::Draw(float x, float y, int type)
+{
+	this->x = x;
+	this->y = y;
+	this->s = s;
+	CSprites* sprites = CSprites::GetInstance();
+	sprites->Get(40044 + type)->Draw(x , y);
 }

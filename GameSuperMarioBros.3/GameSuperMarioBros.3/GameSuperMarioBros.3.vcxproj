@@ -49,6 +49,7 @@
     <ClInclude Include="Scence.h" />
     <ClInclude Include="ScenceSelect.h" />
     <ClInclude Include="Sprites.h" />
+    <ClInclude Include="SwitchBlock.h" />
     <ClInclude Include="Textures.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="WaterPipe.h" />
@@ -82,6 +83,7 @@
     <ClCompile Include="Scence.cpp" />
     <ClCompile Include="ScenceSelect.cpp" />
     <ClCompile Include="Sprites.cpp" />
+    <ClCompile Include="SwitchBlock.cpp" />
     <ClCompile Include="Textures.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="WaterPipe.cpp" />

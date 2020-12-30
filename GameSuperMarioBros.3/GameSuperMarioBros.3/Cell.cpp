@@ -13,6 +13,11 @@ Cell::~Cell()
 
 void Cell::add(LPGAMEOBJECT obj)
 {
+	for (int i = 0; i < listObject.size(); i++)
+	{
+		if (listObject.at(i) == obj)
+			return;
+	}
 	listObject.push_back(obj);
 }
 
@@ -24,7 +29,7 @@ void Cell::earseObj(LPGAMEOBJECT obj)
 			DebugOut(L"chua xoa obj \n");
 			break;
 		}
-	DebugOut(L"da xoa obj \n");
+	DebugOut(L"da xoa obj x=%f,y=%f\n",obj->x,obj->y);
 
 }
 

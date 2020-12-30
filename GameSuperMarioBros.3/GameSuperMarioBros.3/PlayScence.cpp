@@ -16,6 +16,7 @@
 #include "BallPlant.h"
 #include "ItemSelect.h"
 #include "ScenceSelect.h"
+#include "SwitchBlock.h"
 
 #define animationball	5
 
@@ -28,6 +29,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	cam = Camera::GetInstance();
 	board = new Board(0, 0);
 	time_start = GetTickCount64();
+
 }
 
 /*
@@ -209,7 +211,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	}
 	case OBJECT_TYPE_BRICK: 
 	{
-		obj = new CBrick();
+		obj = new CBrick(x,y);
 		int r = atoi(tokens[4].c_str());
 		int b = atoi(tokens[5].c_str());
 		int type = atoi(tokens[6].c_str());
@@ -282,7 +284,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	}
 	case OBJECT_TYPE_COIN:
 	{
-		obj = new Coin();
+		obj = new Coin(x,y);
 		break;
 	}
 	case OBJECT_TYPE_ITEMSELECT:
@@ -451,6 +453,25 @@ void CPlayScene::Update(DWORD dt)
 		}
 			
 	}
+	//add nut switch P
+	for (int i = 0; i < objects.size(); i++)
+	{
+		if (dynamic_cast<CBrick*>(objects.at(i)))
+		{
+			CBrick* brick = dynamic_cast<CBrick*>(objects.at(i));
+			if (brick->type==BRICK5 &&brick->isP && !brick->isAddItem)
+			{
+
+						SwitchBlock* s = new SwitchBlock(brick->x, brick->y-16);
+						grid->addObject(s);
+						brick->isAddItem = true;
+			}
+		}
+	}
+
+
+
+
 	for (size_t i = 0; i < objects.size(); i++)
 	{
 		if (dynamic_cast<BallPlant*>(objects.at(i)))
@@ -541,22 +562,26 @@ void CPlayScene::Update(DWORD dt)
 		if (cy < SCREEN_HEIGHT-32)
 		{
 			cy = 0;
-		} else if (cy > mapheight - SCREEN_HEIGHT)
+		} 
+		else if (cy > mapheight - SCREEN_HEIGHT/2)
 		{
 			cy= mapheight - SCREEN_HEIGHT+32;
-		}else //if (cy < mapheight - SCREEN_HEIGHT)
+		}
+		else //if (cy < mapheight - SCREEN_HEIGHT)
 		{
 			cy = cy - SCREEN_HEIGHT/2+32;
 		}
 	}
-	else {
+	else 
+	{
 		cy = mapheight - SCREEN_HEIGHT;
 	}
 	if (cy < 0) cy = 0;
 	//cy -= SCREEN_HEIGHT / 2;
 
 	cam->SetCameraPosition((int)cx, (int)cy);
-	board->SetPosition((int)cx+8, 440);
+	if (board != NULL)
+		board->SetPosition((int)cx + 8, (int) cy+200);
 }
 
 void CPlayScene::Render()
@@ -579,6 +604,7 @@ void CPlayScene::Render()
 	}
 	map->DrawMap();
 	grid->GetListOfObjects(&objects);
+	objects=Camera::GetInstance()->GetlistinCamera(objects);
 	vector<LPGAMEOBJECT> listobject;
 	vector<LPGAMEOBJECT> listitem;
 	vector<LPGAMEOBJECT> listPipe;
@@ -621,6 +647,14 @@ void CPlayScene::Render()
 		for (int i = 0; i < player->listball.size(); i++)
 			player->listball.at(i)->Render();
 	}
+
+	if (player->iscard)
+	{
+		string1.Draw(2650, 260, s1);
+		string2.Draw(2630, 280, s2);
+		card.Draw(2770, 270, player->typecard);
+	}
+
 	board->Render(player, 300-(GetTickCount64()-time_start)/1000);
 }
 
@@ -633,11 +667,19 @@ void CPlayScene::Unload()
 		delete objects[i];
 	for (int i = 0; i < listscenceselect.size(); i++)
 		delete listscenceselect[i];
+	for (int i = 0; i < objects_item.size(); i++)
+		delete objects_item[i];
 
 	objects.clear();
 	listscenceselect.clear();
+	objects_item.clear();
 
-	player = NULL;
+	//player->SetPosition(30, 10);
+
+	Grid::GetInstance()->ClearObject();
+	map->Clear();
+	Camera::GetInstance()->SetCameraPosition(0, 0);
+
 
 	DebugOut(L"[INFO] Scene %s unloaded! \n", sceneFilePath);
 }
@@ -734,7 +776,7 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 		if (mario->isJump&&!mario->isBonusvy&&mario->GetLevel()==MARIO_LEVEL_RACCOON)
 		{
 			mario->isfly = true;
-			mario->SetSpeed(mario->vx, 0);
+			mario->SetSpeed(mario->vx, -0.1);
 		}
 		break;
 	case DIK_A: 
@@ -874,6 +916,7 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 				mario->SetState(MARIO_STATE_RUNJUMP_RIGHT);
 			else
 				mario->SetState(MARIO_STATE_RUNJUMP_LEFT);
+			mario->vy = -0.1f;
 		}
 		else
 		{
