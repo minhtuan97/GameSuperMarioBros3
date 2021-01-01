@@ -5,6 +5,7 @@ CBrick::CBrick(float x, float y)
 	x_de = x;
 	y_de = y;
 	SetSpeed(0, 0);
+	type = 6;
 }
 
 void CBrick::Render()
@@ -23,6 +24,10 @@ void CBrick::Render()
 			animation_set->at(4)->Render(x, y);
 		else
 		animation_set->at(2)->Render(x, y);
+	}
+	if (type == 6)
+	{
+		animation_set->at(0)->Render(x,y);
 	}
 	RenderBoundingBox();
 }
@@ -45,6 +50,8 @@ void CBrick::GetBoundingBox(float &l, float &t, float &r, float &b)
 
 void CBrick::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
+	if (type == 0)
+		return;
 	if (!isP)
 		return;
 	CGameObject::Update(dt);

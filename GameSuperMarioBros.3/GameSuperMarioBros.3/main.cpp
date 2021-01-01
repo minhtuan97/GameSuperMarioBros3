@@ -33,7 +33,7 @@
 #define WINDOW_CLASS_NAME L"Mario"
 #define MAIN_WINDOW_TITLE L"Mario"
 
-#define BACKGROUND_COLOR D3DCOLOR_XRGB(255, 255, 200)
+#define BACKGROUND_COLOR D3DCOLOR_XRGB(0,0,0)
 
 
 #define MAX_FRAME_RATE 120
@@ -60,6 +60,7 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 void Update(DWORD dt)
 {
 	CGame::GetInstance()->GetCurrentScene()->Update(dt);
+
 }
 
 /*

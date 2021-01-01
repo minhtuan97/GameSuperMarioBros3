@@ -29,7 +29,8 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	cam = Camera::GetInstance();
 	board = new Board(0, 0);
 	time_start = GetTickCount64();
-
+	map = Map::GetInstance();
+	time = GetTickCount64();
 }
 
 /*
@@ -166,7 +167,26 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	CAnimationSets * animation_sets = CAnimationSets::GetInstance();
 
 	CGameObject *obj = NULL;
+	if (id == 0)
+	{
+		switch (object_type)
+		{
+		case OBJECT_TYPE_BRICK:
+		{
+			obj = new CBrick(x, y);
+			CBrick* brick = (CBrick*)obj;
+			break;
+		}
+		}
+		// General object setup
+		obj->SetPosition(x, y);
 
+		LPANIMATION_SET ani_set = animation_sets->Get(ani_set_id);
+
+		obj->SetAnimationSet(ani_set);
+		objects.push_back(obj);
+		return;
+	}
 	switch (object_type)
 	{
 	case OBJECT_TYPE_MARIO:
@@ -296,8 +316,13 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		{	
 			float r = atof(tokens[4].c_str());
 			float b = atof(tokens[5].c_str());
+			float xm = atof(tokens[7].c_str());
+			float ym = atof(tokens[8].c_str());
 			int scene_id = atoi(tokens[6].c_str());
 			obj = new CPortal(x, y, r, b, scene_id);
+			CPortal* c = (CPortal*)obj;
+			c->xmario = xm;
+			c->ymario = ym;
 		}
 		break;
 	default:
@@ -395,198 +420,282 @@ void CPlayScene::Update(DWORD dt)
 
 	if (id == 0)
 	{
+		DebugOut(L"update scence intro\n");
+		if (khoitao)
+		{
+			if (player == NULL)
+			{
+				player = new CMario(0,160);
+				player->SetAnimationSet(CAnimationSets::GetInstance()->Get(2));
+				player->scence = id;
+				player->SetState(MARIO_STATE_WALKING_RIGHT);
+				player->SetLevel(MARIO_LEVEL_BIG);
+				objects.push_back(player);
+			}
+			if (player2 == NULL)
+			{
+				player2 = new CMario(230,160);
+				player2->SetAnimationSet(CAnimationSets::GetInstance()->Get(2));
+				player2->scence = id;
+				player2->SetLevel(MARIO_LEVEL_BIG);
+
+				player2->SetState(MARIO_STATE_WALKING_LEFT);
+
+				objects.push_back(player2);
+			}
+			khoitao = false;
+			
+		}
+		for (int i = 0; i < objects.size(); i++)
+		{
+			objects.at(i)->Update(dt, &objects);
+		}
+
+		if (GetTickCount64()- time >= 4000&&!isjump)
+		{
+			isjump = true;
+			player->SetState(MARIO_STATE_JUMP_RIGHT);
+			
+		}
+		if (GetTickCount64() - time >= 5000&& GetTickCount64() - time <= 5100)
+		{
+			player->SetState(MARIO_STATE_IDLE_RIGHT);
+			player->SetSpeed(0.1, 0.15f);
+		}
+
+		return;
+		
+	}
+
+	if (id == 1)
+	{
 		cam->SetCameraPosition(0,0);
 		board->SetPosition(8, 200);
 		player->Update(dt, &listscenceselect);
 		return;
 	}
-
-	vector<LPGAMEOBJECT> coObjects;
-	//for (size_t i = 1; i < objects.size(); i++)
-	//{
-	//	coObjects.push_back(objects[i]);
-	//}
-	grid->GetListOfObjects(&coObjects);
-	vector<BallPlant*> listballplant;
-	listballplant.clear();
-	vector<Coin*> listCoin;
-	listCoin.clear();
-	vector<CBrick*> listBrick;
-	listBrick.clear();
-	vector<Plant*> listPlant;
-	listPlant.clear();
-
-	for (size_t i = 0; i < objects.size(); i++)
+	if (id >= 2)
 	{
-		objects[i]->Update(dt, &coObjects);
-	}
+		vector<LPGAMEOBJECT> coObjects;
+		//for (size_t i = 1; i < objects.size(); i++)
+		//{
+		//	coObjects.push_back(objects[i]);
+		//}
+		grid->GetListOfObjects(&coObjects);
+		vector<BallPlant*> listballplant;
+		listballplant.clear();
+		vector<Coin*> listCoin;
+		listCoin.clear();
+		vector<CBrick*> listBrick;
+		listBrick.clear();
+		vector<Plant*> listPlant;
+		listPlant.clear();
 
-	// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
-	if (player == NULL) return; 
-	player->Update(dt, &coObjects);
-
-	//add item vao grid
-	for (int i = 0; i < objects.size(); i++)
-	{
-		if (dynamic_cast<QuestionBrick*>(objects.at(i)))
+		for (size_t i = 0; i < objects.size(); i++)
 		{
-			QuestionBrick* brick = dynamic_cast<QuestionBrick*>(objects.at(i));
-			if (brick->isColi&&!brick->isAddItem)
+			objects[i]->Update(dt, &coObjects);
+		}
+
+		// skip the rest if scene was already unloaded (Mario::Update might trigger PlayScene::Unload)
+		if (player == NULL) return;
+		player->Update(dt, &coObjects);
+
+		//add item vao grid
+		for (int i = 0; i < objects.size(); i++)
+		{
+			if (dynamic_cast<QuestionBrick*>(objects.at(i)))
 			{
-				for (int m = 0; m < objects_item.size(); m++)
+				QuestionBrick* brick = dynamic_cast<QuestionBrick*>(objects.at(i));
+				if (brick->isColi && !brick->isAddItem)
 				{
-					Item* item = dynamic_cast<Item*>(objects_item.at(m));
-					if (item->id == brick->iditem)
+					for (int m = 0; m < objects_item.size(); m++)
 					{
-						if (item->type == 0)item->SetSpeed(0, -0.3);
-						if (item->type == 1)item->SetSpeed(0, -0.01);
-						if (item->type == 2)
+						Item* item = dynamic_cast<Item*>(objects_item.at(m));
+						if (item->id == brick->iditem)
 						{
-							item->SetPosition(brick->x,brick->y);
-							item->SetSpeed(0, -0.3);
+							if (item->type == 0)item->SetSpeed(0, -0.3);
+							if (item->type == 1)item->SetSpeed(0, -0.01);
+							if (item->type == 2)
+							{
+								item->SetPosition(brick->x, brick->y);
+								item->SetSpeed(0, -0.3);
+							}
+							grid->addObject(item);
+							brick->isAddItem = true;
 						}
-						grid->addObject(item);
-						brick->isAddItem = true;
 					}
 				}
 			}
-		}
-			
-	}
-	//add nut switch P
-	for (int i = 0; i < objects.size(); i++)
-	{
-		if (dynamic_cast<CBrick*>(objects.at(i)))
-		{
-			CBrick* brick = dynamic_cast<CBrick*>(objects.at(i));
-			if (brick->type==BRICK5 &&brick->isP && !brick->isAddItem)
-			{
 
-						SwitchBlock* s = new SwitchBlock(brick->x, brick->y-16);
-						grid->addObject(s);
-						brick->isAddItem = true;
+		}
+		//add nut switch P
+		for (int i = 0; i < objects.size(); i++)
+		{
+			if (dynamic_cast<CBrick*>(objects.at(i)))
+			{
+				CBrick* brick = dynamic_cast<CBrick*>(objects.at(i));
+				if (brick->type == BRICK5 && brick->isP && !brick->isAddItem)
+				{
+
+					SwitchBlock* s = new SwitchBlock(brick->x, brick->y - 16);
+					grid->addObject(s);
+					brick->isAddItem = true;
+				}
 			}
 		}
-	}
 
 
 
 
-	for (size_t i = 0; i < objects.size(); i++)
-	{
-		if (dynamic_cast<BallPlant*>(objects.at(i)))
+		for (size_t i = 0; i < objects.size(); i++)
 		{
-			BallPlant* e = dynamic_cast<BallPlant*>(objects.at(i));
-			listballplant.push_back(e);
-		}		
-	}
-	for (size_t i = 0; i < listballplant.size(); i++)
-	{
-		if (listballplant.at(i)->isattack == true)
-			grid->deleteObject(listballplant.at(i));
-	}
-	//update coin
-	for (size_t i = 0; i < objects.size(); i++)
-	{
-		if (dynamic_cast<Coin*>(objects.at(i)))
+			if (dynamic_cast<BallPlant*>(objects.at(i)))
+			{
+				BallPlant* e = dynamic_cast<BallPlant*>(objects.at(i));
+				listballplant.push_back(e);
+			}
+		}
+		for (size_t i = 0; i < listballplant.size(); i++)
 		{
-			Coin* e = dynamic_cast<Coin*>(objects.at(i));
-			listCoin.push_back(e);
+			if (listballplant.at(i)->isattack == true)
+				grid->deleteObject(listballplant.at(i));
 		}
-	}
-	for (size_t i = 0; i < listCoin.size(); i++)
-	{
-		if (listCoin.at(i)->iscoli == true)
-			grid->deleteObject(listCoin.at(i));
-	}
-
-	for (size_t i = 0; i < objects.size(); i++)
-	{
-		if (dynamic_cast<CBrick*>(objects.at(i)))
+		//update coin
+		for (size_t i = 0; i < objects.size(); i++)
 		{
-			CBrick* e = dynamic_cast<CBrick*>(objects.at(i));
-			listBrick.push_back(e);
+			if (dynamic_cast<Coin*>(objects.at(i)))
+			{
+				Coin* e = dynamic_cast<Coin*>(objects.at(i));
+				listCoin.push_back(e);
+			}
 		}
-	}
-	for (size_t i = 0; i < listBrick.size(); i++)
-	{
-		if (listBrick.at(i)->isColi == true)
-			grid->deleteObject(listBrick.at(i));
-	}
-
-	for (size_t i = 0; i < objects.size(); i++)
-	{
-		if (dynamic_cast<Plant*>(objects.at(i)))
+		for (size_t i = 0; i < listCoin.size(); i++)
 		{
-			Plant* e = dynamic_cast<Plant*>(objects.at(i));
-			listPlant.push_back(e);
+			if (listCoin.at(i)->iscoli == true)
+				grid->deleteObject(listCoin.at(i));
 		}
-	}
-	for (size_t i = 0; i < listPlant.size(); i++)
-	{
-		if (listPlant.at(i)->isColi == true)
-			grid->deleteObject(listPlant.at(i));
-	}
+
+		for (size_t i = 0; i < objects.size(); i++)
+		{
+			if (dynamic_cast<CBrick*>(objects.at(i)))
+			{
+				CBrick* e = dynamic_cast<CBrick*>(objects.at(i));
+				listBrick.push_back(e);
+			}
+		}
+		for (size_t i = 0; i < listBrick.size(); i++)
+		{
+			if (listBrick.at(i)->isColi == true)
+				grid->deleteObject(listBrick.at(i));
+		}
+
+		for (size_t i = 0; i < objects.size(); i++)
+		{
+			if (dynamic_cast<Plant*>(objects.at(i)))
+			{
+				Plant* e = dynamic_cast<Plant*>(objects.at(i));
+				listPlant.push_back(e);
+			}
+		}
+		for (size_t i = 0; i < listPlant.size(); i++)
+		{
+			if (listPlant.at(i)->isColi == true)
+				grid->deleteObject(listPlant.at(i));
+		}
 
 
-	// Update camera to follow mario
-	float cx, cy, mapheight, mapwidth;
-	mapheight = map->GetHeight();
-	mapwidth = map->GetWidth();
-	player->GetPosition(cx, cy);
-	if (player->iswag)
-	{
-		if (player->nx > 0)
-			cx -= 8;
-		else if (player->nx < 0)
-			cx += 8;
-	}
-	D3DXVECTOR3 pos = cam->GetCameraPosition();
-	if (mapwidth > SCREEN_WIDTH) {
-		if (cx + 5 < SCREEN_WIDTH / 2) {
-			cx = pos.x;
+		// Update camera to follow mario
+		float cx, cy, mapheight, mapwidth;
+		
+		//if (map == NULL)
+		//{
+		//	map = Map::GetInstance();
+		//}
+		mapheight = Map::GetInstance()->GetHeight();
+		mapwidth = Map::GetInstance()->GetWidth();
+		player->GetPosition(cx, cy);
+		if (player->iswag)
+		{
+			if (player->nx > 0)
+				cx -= 8;
+			else if (player->nx < 0)
+				cx += 8;
 		}
-		else if (cx + SCREEN_WIDTH / 2 > mapwidth - 1) {
-			cx = mapwidth - SCREEN_WIDTH;
+		D3DXVECTOR3 pos = cam->GetCameraPosition();
+		if (mapwidth > SCREEN_WIDTH) {
+			if (cx + 5 < SCREEN_WIDTH / 2) {
+				cx = pos.x;
+			}
+			else if (cx + SCREEN_WIDTH / 2 > mapwidth - 1) {
+				cx = mapwidth - SCREEN_WIDTH;
+			}
+			else {
+				cx = cx + 5 + SCREEN_WIDTH / 2 - SCREEN_WIDTH;
+			}
 		}
 		else {
-			cx = cx + 5 + SCREEN_WIDTH / 2 - SCREEN_WIDTH;
+			cx = 0;
 		}
-	}
-	else {
-		cx = 0;
-	}
 
-	if (mapheight > SCREEN_HEIGHT )
-	{
-		if (cy < SCREEN_HEIGHT-32)
+		if (mapheight > SCREEN_HEIGHT)
 		{
-			cy = 0;
-		} 
-		else if (cy > mapheight - SCREEN_HEIGHT/2)
-		{
-			cy= mapheight - SCREEN_HEIGHT+32;
+			if (cy < SCREEN_HEIGHT - 32)
+			{
+				cy = 0;
+			}
+			else if (cy > mapheight - SCREEN_HEIGHT )
+			{
+				cy = mapheight - SCREEN_HEIGHT+32;
+			}
+			else //if (cy < mapheight - SCREEN_HEIGHT)
+			{
+				cy = cy - SCREEN_HEIGHT / 2 + 32;
+			}
 		}
-		else //if (cy < mapheight - SCREEN_HEIGHT)
+		else
 		{
-			cy = cy - SCREEN_HEIGHT/2+32;
+			cy = mapheight - SCREEN_HEIGHT;
 		}
-	}
-	else 
-	{
-		cy = mapheight - SCREEN_HEIGHT;
-	}
-	if (cy < 0) cy = 0;
-	//cy -= SCREEN_HEIGHT / 2;
+		if (cy < 0) cy = 0;
+		//cy -= SCREEN_HEIGHT / 2;
 
-	cam->SetCameraPosition((int)cx, (int)cy);
-	if (board != NULL)
-		board->SetPosition((int)cx + 8, (int) cy+200);
+		cam->SetCameraPosition((int)cx, (int)cy);
+		if (board != NULL)
+			board->SetPosition((int)cx + 8, (int)cy + 200);
+	}
 }
 
 void CPlayScene::Render()
 {
 	if (id == 0)
+	{
+		for (int i = 0; i < objects.size(); i++)
+		{
+			objects.at(i)->Render();
+		}
+		DebugOut(L"render scence intro\n");
+		if (pace < height)
+		{
+			if (!khoitao)
+			{
+				CSprites* sprites = CSprites::GetInstance();
+				//int count = (height) / 16;
+				int y = height - pace;
+				for (; y >= -16; y = y - 16)
+				{
+					sprites->Get(41001)->Draw(0, y);
+				}
+				sprites->Get(41002)->Draw(0, height - pace);
+				pace = pace + 2;
+				return;
+			}
+		}
+		else
+		{
+				khoitao = true;
+		}
+	}
+	if (id == 1)
 	{
 
 		CSprites* sprites = CSprites::GetInstance();
@@ -602,16 +711,18 @@ void CPlayScene::Render()
 		}
 		return;
 	}
-	map->DrawMap();
-	grid->GetListOfObjects(&objects);
-	objects=Camera::GetInstance()->GetlistinCamera(objects);
-	vector<LPGAMEOBJECT> listobject;
-	vector<LPGAMEOBJECT> listitem;
-	vector<LPGAMEOBJECT> listPipe;
-	vector<LPGAMEOBJECT> listPlant;
-
-	for (int i = 0; i < objects.size(); i++)
+	if (id >= 2)
 	{
+		map->DrawMap();
+		grid->GetListOfObjects(&objects);
+		//objects = Camera::GetInstance()->GetlistinCamera(objects);
+		vector<LPGAMEOBJECT> listobject;
+		vector<LPGAMEOBJECT> listitem;
+		vector<LPGAMEOBJECT> listPipe;
+		vector<LPGAMEOBJECT> listPlant;
+
+		for (int i = 0; i < objects.size(); i++)
+		{
 			if (dynamic_cast<Item*>(objects.at(i)))
 				listitem.push_back(objects.at(i));
 			else
@@ -622,40 +733,42 @@ void CPlayScene::Render()
 						listPlant.push_back(objects.at(i));
 					else
 						listobject.push_back(objects.at(i));
-	}
-	
-	for (int i = 0; i < listobject.size(); i++)
-	{
-		listobject[i]->Render();
-	}
-	for (int i = 0; i < listitem.size(); i++)
-	{
-		listitem[i]->Render();
-	}
-	
-	for (int i = 0; i < listPlant.size(); i++)
-	{
-		listPlant[i]->Render();
-	}
-	for (int i = 0; i < listPipe.size(); i++)
-	{
-		listPipe[i]->Render();
-	}
-	if (player)
-	{
-		player->Render();
-		for (int i = 0; i < player->listball.size(); i++)
-			player->listball.at(i)->Render();
+		}
+
+		for (int i = 0; i < listobject.size(); i++)
+		{
+			listobject[i]->Render();
+		}
+		for (int i = 0; i < listitem.size(); i++)
+		{
+			listitem[i]->Render();
+		}
+
+		for (int i = 0; i < listPlant.size(); i++)
+		{
+			listPlant[i]->Render();
+		}
+		for (int i = 0; i < listPipe.size(); i++)
+		{
+			listPipe[i]->Render();
+		}
+		if (player)
+		{
+			player->Render();
+			for (int i = 0; i < player->listball.size(); i++)
+				player->listball.at(i)->Render();
+		}
+
+		if (player->iscard)
+		{
+			string1.Draw(2650, 260, s1);
+			string2.Draw(2630, 280, s2);
+			card.Draw(2770, 270, player->typecard);
+		}
+
+		board->Render(player, 300 - (GetTickCount64() - time_start) / 1000);
 	}
 
-	if (player->iscard)
-	{
-		string1.Draw(2650, 260, s1);
-		string2.Draw(2630, 280, s2);
-		card.Draw(2770, 270, player->typecard);
-	}
-
-	board->Render(player, 300-(GetTickCount64()-time_start)/1000);
 }
 
 /*
@@ -689,7 +802,12 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	//DebugOut(L"[INFO] KeyDown: %d\n", KeyCode);
 	CGame* game = CGame::GetInstance();
 	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
-	if (mario->scence == 0)
+
+	if (((CPlayScene*)scence)->id == 0)
+	{
+		return;
+	}
+	if (((CPlayScene*)scence)->id == 1)
 	{
 		if (!(!mario->autoleft && !mario->autoright && !mario->autodown && !mario->autoup))
 			return;
@@ -737,7 +855,7 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 			mario->autoup = false;
 			break;
 		case DIK_S:
-			if (mario->scenceselect > 0)
+			if (mario->scenceselect > 1)
 			{
 				CGame::GetInstance()->SwitchScene(mario->scenceselect);
 
@@ -750,7 +868,12 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	}
 	switch (KeyCode)
 	{
-	
+	case DIK_N:
+		mario->SetPosition(2200, 50);
+		break;
+	case DIK_DOWN:
+
+		break;
 	case DIK_X:
 		if (mario->isJump||mario->isjumpX)
 			break;
@@ -829,7 +952,11 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 {
 	CGame* game = CGame::GetInstance();
 	CMario* mario = ((CPlayScene*)scence)->GetPlayer();
-	if (mario->scence == 0) return;
+	if (((CPlayScene*)scence)->id == 0)
+	{
+		return;
+	}
+	if (((CPlayScene*)scence)->id == 1) return;
 	switch (KeyCode)
 	{
 	case DIK_X:
@@ -863,7 +990,11 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 {
 	CGame *game = CGame::GetInstance();
 	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
-	if (mario->scence == 0)
+	if (((CPlayScene*)scence)->id == 0)
+	{
+		return;
+	}
+	if (((CPlayScene*)scence)->id == 1)
 		return;
 	// disable control key when Mario die 
 	if (mario->GetState() == MARIO_STATE_DIE) return;

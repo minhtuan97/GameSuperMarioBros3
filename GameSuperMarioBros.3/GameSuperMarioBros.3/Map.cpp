@@ -15,6 +15,9 @@ Map* Map::_instance = NULL;
 
 Map::Map()
 {
+
+	widthTile = 16, heightTile = 16;
+	ColumnMap = 2, RowMap = 2;
 }
 
 void Map::_ParseSection_SETTING(string line)
@@ -106,7 +109,8 @@ void Map::DrawMap()
 	CSprites* sprites = CSprites::GetInstance();
 	int a = -1;
 	//DebugOut(L"bat dau\n");
-	for (int i = tile_start_row; i < tile_row+ tile_start_row; i++)
+	//for (int i = tile_start_row; i < tile_row + tile_start_row; i++)
+		for (int i = 0; i <RowMap; i++)
 		//for (int j = 0; j < ColumnMap; j++)
 		for (int j = tile_start_column; j < tile_column+ tile_start_column; j++)
 		{
@@ -142,7 +146,8 @@ float Map::GetWidth()
 
 Map* Map::GetInstance()
 {
-	if (_instance == NULL) _instance = new Map();
+	if (_instance == NULL) 
+		_instance = new Map();
 	return _instance;
 }
 

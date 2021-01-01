@@ -11,14 +11,14 @@
 #define ID_TEX_MAP1 50
 class Map
 {
+	static Map* _instance;
 	int ColumnTile=0;
 	int RowTile=0;
 	int TotalTiles=0;
-	int widthTile=0, heightTile=0;
-	int ColumnMap=0, RowMap=0;
+	int widthTile=16, heightTile=16;
+	int ColumnMap, RowMap;
 	int TileMap[500][500];
 	int linedata = 0;
-	static Map* _instance;
 public:
 	Map();
 	void LoadFile(LPCWSTR filename, int idTextureMap);

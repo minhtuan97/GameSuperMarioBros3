@@ -19,7 +19,8 @@ protected:
 	Map* map;
 	Grid* grid;
 	Camera* cam;
-	CMario *player;					// A play scene has to have player, right? 
+	CMario* player;					// A play scene has to have player, right? 
+	CMario *player2;					// A play scene has to have player, right? 
 	Board* board;
 
 	vector<LPGAMEOBJECT> objects;	
@@ -32,6 +33,9 @@ protected:
 	Font string2;
 	Font card;
 	bool iscard = false;
+	int height = 188;
+	int pace = 0;
+	bool khoitao = false;
 
 	void _ParseSection_TEXTURES(string line);
 	void _ParseSection_SPRITES(string line);
@@ -42,6 +46,8 @@ protected:
 	
 public: 
 	DWORD64 time_start = 0;
+	DWORD64 time = 0;
+	bool isjump = false;
 
 	CPlayScene(int id, LPCWSTR filePath);
 

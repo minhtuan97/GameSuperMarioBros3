@@ -21,6 +21,7 @@
 #include "ItemSelect.h"
 #include "ScenceSelect.h"
 #include "SwitchBlock.h"
+#include "PlayScence.h"
 
 #define TYPE_NAM	1
 #define TYPE_LA	2
@@ -45,6 +46,14 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
 	if (scence == 0)
 	{
+		CGameObject::Update(dt);
+		x += dx;
+		y += dy;
+
+		return;
+	}
+	if (scence == 1)
+	{
 		ScenceSelect* s = nullptr;
 		for (int i = 0; i < coObjects->size(); i++)
 		{
@@ -65,7 +74,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		}
 		if (autoleft)
 		{
-			x -= 0.5;
+			x -= 1;
 			if (x_star-x >= MARIO_distanmove)
 			{
 				autoleft = false;
@@ -74,7 +83,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		}
 		if (autoright)
 		{
-			x += 0.5;
+			x += 1;
 			if (x- x_star >= MARIO_distanmove)
 			{
 				autoright = false;
@@ -83,7 +92,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		}
 		if (autoup)
 		{
-			y -= 0.5;
+			y -= 1;
 			if (y_start - y >= MARIO_distanmove)
 			{
 				autoup = false;
@@ -92,7 +101,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		}
 		if (autodown)
 		{
-			y += 0.5;
+			y += 1;
 			if (y - y_start >= MARIO_distanmove)
 			{
 				autodown = false;
@@ -190,7 +199,13 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		if (AABB(listPort.at(i)))
 		{
 				CPortal* p = dynamic_cast<CPortal*>(listPort.at(i));
+				float xnew, ynew;
+				xnew = p->xmario;
+				ynew = p->ymario;
 				CGame::GetInstance()->SwitchScene(p->GetSceneId());
+				SetState(MARIO_STATE_IDLE);
+				SetPosition(xnew, ynew);
+				return;
 		}
 	}
 
@@ -579,12 +594,15 @@ void CMario::Render()
 	//	animation_set->at(ani)->Render(x-8, y, alpha);
 	//else
 	//DebugOut(L"fly=%d, ani=%d, isbounus=%d\n", isfly, ani,isBonusvy);
-	if (scence == 0)
+	if (scence == 1)
 	{
 		ani = 136;
 	}
+	//if (scence == 0)
+	//{
+	//	ani = 26;
+	//}
 	animation_set->at(ani)->Render(x, y, alpha);
-
 	RenderBoundingBox();
 }
 
@@ -597,21 +615,46 @@ void CMario::SetState(int state)
 	{
 	case MARIO_STATE_WALKING_RIGHT:
 		//vx = MARIO_WALKING_SPEED;
-		if (vx < 0.1f)
-			vx += 0.005f;
-		nx = 1;
-		if (!isJump)
-			CGameObject::SetState(state);
-		iswalking = true;
+		if (scence == 0)
+		{	
+			vx = 0.05f;
+			vy = 0;
+			nx = 1;
+			if (!isJump)
+				CGameObject::SetState(state);
+			iswalking = true;
+		}
+		else
+		{
+			if (vx < 0.1f)
+				vx += 0.005f;
+			nx = 1;
+			if (!isJump)
+				CGameObject::SetState(state);
+			iswalking = true;
+		}
+		
 		break;
 	case MARIO_STATE_WALKING_LEFT: 
 		//vx = -MARIO_WALKING_SPEED;
-		if (vx > -0.1f)
-			vx -= 0.005f;
-		nx = -1;
-		if (!isJump)
-			CGameObject::SetState(state);
-		iswalking = true;
+		if (scence == 0)
+		{
+				vx = -0.05f;
+				vy = 0;
+			nx = -1;
+			if (!isJump)
+				CGameObject::SetState(state);
+			iswalking = true;
+		}
+		else
+		{
+			if (vx > -0.1f)
+				vx -= 0.005f;
+			nx = -1;
+			if (!isJump)
+				CGameObject::SetState(state);
+			iswalking = true;
+		}
 		break;
 	case MARIO_STATE_RUN_LEFT:
 		//vx = -MARIO_WALKING_SPEED;
@@ -1206,7 +1249,7 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 	{
 		CalcPotentialCollisions(&listkoopas, coEvents);
 		CalcPotentialCollisions(&listgoomba, coEvents);
-		CalcPotentialCollisions(&listPlant, coEvents);
+		//CalcPotentialCollisions(&listPlant, coEvents);
 		CalcPotentialCollisions(&listPlantball, coEvents);
 	}
 
@@ -1449,6 +1492,34 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 	// clean up collision events
 	for (UINT i = 0; i < coEvents.size(); i++) 
 		delete coEvents[i];
+	
+	//xet va chma voi plant
+	for (int i = 0; i < listPlant.size(); i++)
+	{
+		if (AABB(listPlant.at(i)))
+		{
+				if (level == MARIO_LEVEL_RACCOON && iswag)
+				{
+					{
+						dynamic_cast<Plant*>(listPlant.at(i))->isColi = true;
+					}
+					enymy += 100;
+				}
+				else
+				{
+					if (untouchable == 0)
+					{
+						if (level > MARIO_LEVEL_SMALL)
+						{
+							level = MARIO_LEVEL_SMALL;
+							StartUntouchable();
+						}
+						else
+							SetState(MARIO_STATE_DIE);
+					}
+				}
+		}
+	}
 }
 
 CMario* CMario::GetInstance()
