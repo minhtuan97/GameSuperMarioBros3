@@ -22,6 +22,7 @@
 #include "ScenceSelect.h"
 #include "SwitchBlock.h"
 #include "PlayScence.h"
+#include "BrickMove.h"
 
 #define TYPE_NAM	1
 #define TYPE_LA	2
@@ -44,14 +45,14 @@ CMario::CMario(float x, float y) : CGameObject()
 
 void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 {
-	if (scence == 0)
-	{
-		CGameObject::Update(dt);
-		x += dx;
-		y += dy;
+	//if (scence == 0)
+	//{
+	//	CGameObject::Update(dt);
+	//	x += dx;
+	//	y += dy;
 
-		return;
-	}
+	//	return;
+	//}
 	if (scence == 1)
 	{
 		ScenceSelect* s = nullptr;
@@ -113,6 +114,32 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	// Calculate dx, dy 
 	CGameObject::Update(dt);
 
+	//check vi tri
+	if (x < 0) x = 0;
+	if (y < 0) y = 0;
+
+	if (state == MARIO_STATE_PIPE)
+	{
+		y += dy;
+		
+		if (GetTickCount64() - switch_scence_start > MARIO_SWITCH_SCENCE_TIME && isSwitchtwoScence)
+		{			
+			SetState(MARIO_STATE_IDLE);
+			isSwitchtwoScence = false;
+			return;
+		}
+		if (GetTickCount64() - pipe_start > MARIO_PIPE_TIME && isSwitch)
+		{
+			//pipe_start = 0;
+			float xnew = portal->xmario;
+			float ynew = portal->ymario;
+			CGame::GetInstance()->SwitchScene(portal->GetSceneId());
+			SetPosition(xnew, ynew);
+			isSwitch = false;
+			return;
+		}
+		return;
+	}
 	// Simple fall down
 	vy += MARIO_GRAVITY*dt;
 
@@ -198,14 +225,21 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	{
 		if (AABB(listPort.at(i)))
 		{
-				CPortal* p = dynamic_cast<CPortal*>(listPort.at(i));
-				float xnew, ynew;
-				xnew = p->xmario;
-				ynew = p->ymario;
-				CGame::GetInstance()->SwitchScene(p->GetSceneId());
-				SetState(MARIO_STATE_IDLE);
-				SetPosition(xnew, ynew);
-				return;
+			//if (!portal)
+			//{
+				portal = dynamic_cast<CPortal*>(listPort.at(i));
+				if (portal->yCPortal < 0)
+					isCanSwitchScenceDown = true;
+				if (portal->yCPortal > 0)
+					isCanSwitchScenceUP = true;
+			//}
+		}
+		else
+		{
+			isCanSwitchScenceDown = false;
+			isCanSwitchScenceUP = false;
+			//delete portal;
+			//portal = NULL;
 		}
 	}
 
@@ -303,6 +337,9 @@ void CMario::Render()
 			ani = MARIO_ANIMATION_SMALL_HOLD_LEFT;
 		else if (state == MARIO_STATE_HOLD_RIGHT)
 			ani = MARIO_ANIMATION_SMALL_HOLD_RIGHT;
+		else if (state == MARIO_STATE_PIPE)
+			ani = MARIO_ANIMATION_SMALL_PIPE;
+
 
 		if (isSkid)
 		{
@@ -378,6 +415,9 @@ void CMario::Render()
 			ani = MARIO_ANIMATION_SUPER_HOLD_LEFT;
 		else if (state == MARIO_STATE_HOLD_RIGHT)
 			ani = MARIO_ANIMATION_SUPER_HOLD_RIGHT;
+		else if (state == MARIO_STATE_PIPE)
+			ani = MARIO_ANIMATION_SUPER_PIPE;
+
 		if (isSkid)
 		{
 			if (nx < 0)
@@ -452,6 +492,10 @@ void CMario::Render()
 			ani = MARIO_ANIMATION_FIRE_HOLD_LEFT;
 		else if (state == MARIO_STATE_HOLD_RIGHT)
 			ani = MARIO_ANIMATION_FIRE_HOLD_RIGHT;
+		else if (state == MARIO_STATE_PIPE)
+			ani = MARIO_ANIMATION_FIRE_PIPE;
+
+
 		if (isSkid)
 		{
 			if (nx < 0)
@@ -543,6 +587,9 @@ void CMario::Render()
 			ani = MARIO_ANIMATION_REACCOON_HOLD_LEFT;
 		else if (state == MARIO_STATE_HOLD_RIGHT)
 			ani = MARIO_ANIMATION_REACCOON_HOLD_RIGHT;
+		else if (state == MARIO_STATE_PIPE)
+			ani = MARIO_ANIMATION_REACCOON_PIPE;
+
 		if (isSkid)
 		{
 			if (nx < 0)
@@ -581,27 +628,10 @@ void CMario::Render()
 	}
 	int alpha = 255;
 	if (untouchable) alpha = 128;
-	//if(state==13||state==14)
-		//DebugOut(L"state=%d, ani=%d, vx=%f,vy=%f, iscanjumpS=%d, ispressX=%d,isUpS=%d ,iswalking=%d, isJump:%d\n", state, ani,vx,vy,iscanjumpS,ispressX,isUpS ,iswalking,isJump);
-	//DebugOut(L"state=%d, ani:%d, isColiWithKoopas=%d\n", state, ani, isColiWithKoopas);
-	//if(rua)
-	//	DebugOut(L"rua->isHold=%d\n",rua->ishold);
-	//if (state == MARIO_STATE_HOLD_LEFT)
-	//	DebugOut(L"state hold\n");
-	//else if (state == MARIO_STATE_HOLD_RIGHT)
-	//	DebugOut(L"state hold\n");
-	//if(frame2wag)
-	//	animation_set->at(ani)->Render(x-8, y, alpha);
-	//else
-	//DebugOut(L"fly=%d, ani=%d, isbounus=%d\n", isfly, ani,isBonusvy);
 	if (scence == 1)
 	{
 		ani = 136;
 	}
-	//if (scence == 0)
-	//{
-	//	ani = 26;
-	//}
 	animation_set->at(ani)->Render(x, y, alpha);
 	RenderBoundingBox();
 }
@@ -738,6 +768,14 @@ void CMario::SetState(int state)
 		nx = 1;
 		iswalking = true;
 		break;
+	case MARIO_STATE_PIPE:
+		CGameObject::SetState(state);
+		vx = vy = 0;
+		pipe_start = GetTickCount64();
+		isSwitch = true;
+		switch_scence_start = GetTickCount64();
+		isSwitchtwoScence = true;
+		break;
 	}
 }
 
@@ -763,13 +801,13 @@ void CMario::GetBoundingBox(float &left, float &top, float &right, float &bottom
 		right = x + MARIO_SMALL_BBOX_WIDTH;
 		bottom = y + MARIO_SMALL_BBOX_HEIGHT;
 	}
-	if (scence == 0)
-	{
-		left = x;
-		top = y;
-		right = x + 14;
-		bottom = y + 16;
-	}
+	//if (scence == 0)
+	//{
+	//	left = x;
+	//	top = y;
+	//	right = x + 14;
+	//	bottom = y + 16;
+	//}
 }
 
 void CMario::DecreasePower()
@@ -799,12 +837,14 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 	vector<LPGAMEOBJECT> listwaterpipe;
 	vector<LPGAMEOBJECT> listItemSelect;
 	vector<LPGAMEOBJECT> listP;
+	vector<LPGAMEOBJECT> listbrickmove;
 
 	listbox.clear();
 	listbrick.clear();
 	listquestionbrick.clear();
 	listItemSelect.clear();
 	listP.clear();
+	listbrickmove.clear();
 
 	for (int i = 0; i < listObject->size(); i++)
 	{
@@ -820,6 +860,8 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 			listItemSelect.push_back(listObject->at(i));
 		if (dynamic_cast<SwitchBlock*>(listObject->at(i)))
 			listP.push_back(listObject->at(i));
+		if (dynamic_cast<BrickMove*>(listObject->at(i)))
+			listbrickmove.push_back(listObject->at(i));
 	}
 
 	vector<LPCOLLISIONEVENT> coEvents;
@@ -837,6 +879,7 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 		CalcPotentialCollisions(&listwaterpipe, coEvents);
 		CalcPotentialCollisions(&listItemSelect, coEvents);
 		CalcPotentialCollisions(&listP, coEvents);
+		CalcPotentialCollisions(&listbrickmove, coEvents);
 	}
 
 	// No collision occured, proceed normally
@@ -871,11 +914,104 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 		for (UINT i = 0; i < coEventsResult.size(); i++)
 		{
 			LPCOLLISIONEVENT e = coEventsResult[i];
-			//if (dynamic_cast<CPortal*>(e->obj))
-			//{
-			//	CPortal* p = dynamic_cast<CPortal*>(e->obj);
-			//	CGame::GetInstance()->SwitchScene(p->GetSceneId());
-			//}
+			
+			if (e->ny < 0)
+			{
+				if (ispressX)
+				{
+					if (this->nx > 0)
+						SetState(MARIO_STATE_JUMP_RIGHT);
+					else
+						SetState(MARIO_STATE_JUMP_LEFT);
+				}
+				else
+				{
+					isjumpX = false;
+					if (vx == 0)
+						SetState(MARIO_STATE_IDLE);
+				}
+
+				if (isUpS)
+				{
+					iscanjumpS = true;
+					isBonusvy = true;
+				}
+				else
+				{
+					iscanjumpS = false;
+					isBonusvy = false;
+				}
+				if (!isjumpX)
+				{
+					if (vx > 0)
+					{
+						isJump = false;
+						iswalking = true;
+						//state = MARIO_STATE_WALKING_RIGHT;
+						//DebugOut(L"Vao ham vx>0, state=%d\n", state);
+					}
+					else if (vx < 0)
+					{
+						isJump = false;
+						iswalking = true;
+						//state = MARIO_STATE_WALKING_LEFT;
+						//DebugOut(L"Vao ham vx<0, state=%d\n", state);
+					}
+				}
+			}
+			//if brickmove
+			if (dynamic_cast<BrickMove*>(e->obj))
+			{
+				if (e->ny < 0)
+				{
+					BrickMove* b = dynamic_cast<BrickMove*>(e->obj);
+					b->isColi = true;
+
+					//	if (ispressX)
+					//	{
+					//		if (this->nx > 0)
+					//			SetState(MARIO_STATE_JUMP_RIGHT);
+					//		else
+					//			SetState(MARIO_STATE_JUMP_LEFT);
+					//	}
+					//	else
+					//	{
+					//		isjumpX = false;
+					//		if (vx == 0)
+					//			SetState(MARIO_STATE_IDLE);
+					//	}
+
+					//	if (isUpS)
+					//	{
+					//		iscanjumpS = true;
+					//		isBonusvy = true;
+					//	}
+					//	else
+					//	{
+					//		iscanjumpS = false;
+					//		isBonusvy = false;
+					//	}
+					//	if (!isjumpX)
+					//	{
+					//		if (vx > 0)
+					//		{
+					//			isJump = false;
+					//			iswalking = true;
+					//			//state = MARIO_STATE_WALKING_RIGHT;
+					//			//DebugOut(L"Vao ham vx>0, state=%d\n", state);
+					//		}
+					//		else if (vx < 0)
+					//		{
+					//			isJump = false;
+					//			iswalking = true;
+					//			//state = MARIO_STATE_WALKING_LEFT;
+					//			//DebugOut(L"Vao ham vx<0, state=%d\n", state);
+					//		}
+					//	}
+					//}
+				}
+			}
+			//if ItemSelect
 			if (dynamic_cast<ItemSelect*>(e->obj))
 			{
 				ItemSelect* p = dynamic_cast<ItemSelect*>(e->obj);
@@ -889,17 +1025,16 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 				{
 					p->isColi = true;
 					p->SetPosition(p->x, p->y + 8);
+					power = 100;
 				}
 
 			}
 			if (dynamic_cast<CBrick*>(e->obj))//if brick
 			{
 				CBrick* brick = dynamic_cast<CBrick*>(e->obj);
-
-				// jump on top >> kill Goomba and deflect a bit 
 				if (e->ny < 0)
 				{
-					if (ispressX)
+					/*if (ispressX)
 					{
 						if (this->nx > 0)
 							SetState(MARIO_STATE_JUMP_RIGHT);
@@ -929,17 +1064,13 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 						{
 							isJump = false;
 							iswalking = true;
-							//state = MARIO_STATE_WALKING_RIGHT;
-							//DebugOut(L"Vao ham vx>0, state=%d\n", state);
 						}
 						else if (vx < 0)
 						{
 							isJump = false;
 							iswalking = true;
-							//state = MARIO_STATE_WALKING_LEFT;
-							//DebugOut(L"Vao ham vx<0, state=%d\n", state);
 						}
-					}
+					}*/
 				}
 				else if (e->ny > 0)
 				{
@@ -958,47 +1089,47 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 				
 				if (e->ny < 0)
 				{
-					if (ispressX)
-					{
-						if (this->nx > 0)
-							SetState(MARIO_STATE_JUMP_RIGHT);
-						else
-							SetState(MARIO_STATE_JUMP_LEFT);
-					}
-					else
-					{
-						isjumpX = false;
-						if (vx == 0)
-							SetState(MARIO_STATE_IDLE);
-					}
+					//if (ispressX)
+					//{
+					//	if (this->nx > 0)
+					//		SetState(MARIO_STATE_JUMP_RIGHT);
+					//	else
+					//		SetState(MARIO_STATE_JUMP_LEFT);
+					//}
+					//else
+					//{
+					//	isjumpX = false;
+					//	if (vx == 0)
+					//		SetState(MARIO_STATE_IDLE);
+					//}
 
-					if (isUpS)
-					{
-						iscanjumpS = true;
-						isBonusvy = true;
-					}
-					else
-					{
-						iscanjumpS = false;
-						isBonusvy = false;
-					}
-					if (!isjumpX)
-					{
-						if (vx > 0)
-						{
-							isJump = false;
-							iswalking = true;
-							state = MARIO_STATE_WALKING_RIGHT;
-							//DebugOut(L"Vao ham vx>0, state=%d\n", state);
-						}
-						else if (vx < 0)
-						{
-							isJump = false;
-							iswalking = true;
-							state = MARIO_STATE_WALKING_LEFT;
-							//DebugOut(L"Vao ham vx<0, state=%d\n", state);
-						}
-					}
+					//if (isUpS)
+					//{
+					//	iscanjumpS = true;
+					//	isBonusvy = true;
+					//}
+					//else
+					//{
+					//	iscanjumpS = false;
+					//	isBonusvy = false;
+					//}
+					//if (!isjumpX)
+					//{
+					//	if (vx > 0)
+					//	{
+					//		isJump = false;
+					//		iswalking = true;
+					//		state = MARIO_STATE_WALKING_RIGHT;
+					//		//DebugOut(L"Vao ham vx>0, state=%d\n", state);
+					//	}
+					//	else if (vx < 0)
+					//	{
+					//		isJump = false;
+					//		iswalking = true;
+					//		state = MARIO_STATE_WALKING_LEFT;
+					//		//DebugOut(L"Vao ham vx<0, state=%d\n", state);
+					//	}
+					//}
 				}
 				else if (e->ny > 0)
 				{
@@ -1022,47 +1153,47 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 				}
 				if (e->ny < 0)
 				{
-					if (ispressX)
-					{
-						if (this->nx > 0)
-							SetState(MARIO_STATE_JUMP_RIGHT);
-						else
-							SetState(MARIO_STATE_JUMP_LEFT);
-					}
-					else
-					{
-						isjumpX = false;
-						if (vx == 0)
-							SetState(MARIO_STATE_IDLE);
-					}
+					//if (ispressX)
+					//{
+					//	if (this->nx > 0)
+					//		SetState(MARIO_STATE_JUMP_RIGHT);
+					//	else
+					//		SetState(MARIO_STATE_JUMP_LEFT);
+					//}
+					//else
+					//{
+					//	isjumpX = false;
+					//	if (vx == 0)
+					//		SetState(MARIO_STATE_IDLE);
+					//}
 
-					if (isUpS)
-					{
-						iscanjumpS = true;
-						isBonusvy = true;
-					}
-					else
-					{
-						iscanjumpS = false;
-						isBonusvy = false;
-					}
-					if (!isjumpX)
-					{
-						if (vx > 0)
-						{
-							isJump = false;
-							iswalking = true;
-							//state = MARIO_STATE_WALKING_RIGHT;
-							//DebugOut(L"Vao ham vx>0, state=%d\n", state);
-						}
-						else if (vx < 0)
-						{
-							isJump = false;
-							iswalking = true;
-							//state = MARIO_STATE_WALKING_LEFT;
-							//DebugOut(L"Vao ham vx<0, state=%d\n", state);
-						}
-					}
+					//if (isUpS)
+					//{
+					//	iscanjumpS = true;
+					//	isBonusvy = true;
+					//}
+					//else
+					//{
+					//	iscanjumpS = false;
+					//	isBonusvy = false;
+					//}
+					//if (!isjumpX)
+					//{
+					//	if (vx > 0)
+					//	{
+					//		isJump = false;
+					//		iswalking = true;
+					//		//state = MARIO_STATE_WALKING_RIGHT;
+					//		//DebugOut(L"Vao ham vx>0, state=%d\n", state);
+					//	}
+					//	else if (vx < 0)
+					//	{
+					//		isJump = false;
+					//		iswalking = true;
+					//		//state = MARIO_STATE_WALKING_LEFT;
+					//		//DebugOut(L"Vao ham vx<0, state=%d\n", state);
+					//	}
+					//}
 				}
 			}
 			if (dynamic_cast<WaterPipe*>(e->obj))
@@ -1072,47 +1203,47 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 				// jump on top >> kill Goomba and deflect a bit 
 				if (e->ny < 0)
 				{
-					if (ispressX)
-					{
-						if (this->nx > 0)
-							SetState(MARIO_STATE_JUMP_RIGHT);
-						else
-							SetState(MARIO_STATE_JUMP_LEFT);
-					}
-					else
-					{
-						isjumpX = false;
-						if (vx == 0)
-							SetState(MARIO_STATE_IDLE);
-					}
+					//if (ispressX)
+					//{
+					//	if (this->nx > 0)
+					//		SetState(MARIO_STATE_JUMP_RIGHT);
+					//	else
+					//		SetState(MARIO_STATE_JUMP_LEFT);
+					//}
+					//else
+					//{
+					//	isjumpX = false;
+					//	if (vx == 0)
+					//		SetState(MARIO_STATE_IDLE);
+					//}
 
-					if (isUpS)
-					{
-						iscanjumpS = true;
-						isBonusvy = true;
-					}
-					else
-					{
-						iscanjumpS = false;
-						isBonusvy = false;
-					}
-					if (!isjumpX)
-					{
-						if (vx > 0)
-						{
-							isJump = false;
-							iswalking = true;
-							state = MARIO_STATE_WALKING_RIGHT;
-							//DebugOut(L"Vao ham vx>0, state=%d\n", state);
-						}
-						else if (vx < 0)
-						{
-							isJump = false;
-							iswalking = true;
-							state = MARIO_STATE_WALKING_LEFT;
-							//DebugOut(L"Vao ham vx<0, state=%d\n", state);
-						}
-					}
+					//if (isUpS)
+					//{
+					//	iscanjumpS = true;
+					//	isBonusvy = true;
+					//}
+					//else
+					//{
+					//	iscanjumpS = false;
+					//	isBonusvy = false;
+					//}
+					//if (!isjumpX)
+					//{
+					//	if (vx > 0)
+					//	{
+					//		isJump = false;
+					//		iswalking = true;
+					//		state = MARIO_STATE_WALKING_RIGHT;
+					//		//DebugOut(L"Vao ham vx>0, state=%d\n", state);
+					//	}
+					//	else if (vx < 0)
+					//	{
+					//		isJump = false;
+					//		iswalking = true;
+					//		state = MARIO_STATE_WALKING_LEFT;
+					//		//DebugOut(L"Vao ham vx<0, state=%d\n", state);
+					//	}
+					//}
 				}
 			}
 		}
@@ -1267,8 +1398,10 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 
 		 //TODO: This is a very ugly designed function!!!!
 		FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nx, ny, rdx, rdy);
-		//x += min_tx * dx + nx * 0.2f;
+		
+		x += min_tx * dx + nx * 0.4f;
 		//y += min_ty * dy + ny * 0.2f;
+		
 		if (nx != 0) vx = 0;
 		if (ny != 0) vy = 0;
 
@@ -1438,6 +1571,7 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 						if (level == MARIO_LEVEL_RACCOON && iswag)
 						{
 							{
+								DebugOut(L"va cham quay duoi voi plant\n");
 								plant->isColi = true;
 							}
 							enymy += 100;

@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "Koopas.h"
 #include "Ball.h"
+#include "Portal.h"
 
 #define MARIO_WALKING_SPEED		0.01f 
 //0.1f
@@ -9,6 +10,7 @@
 #define MARIO_JUMP_DEFLECT_SPEED 0.2f
 #define MARIO_GRAVITY			0.001f
 #define MARIO_DIE_DEFLECT_SPEED	 0.5f
+#define SPEED_WAG	0.001f
 
 #define MARIO_STATE_IDLE			0
 #define MARIO_STATE_WALKING_RIGHT	100
@@ -223,6 +225,8 @@
 #define MARIO_SKID_TIME 200
 #define MARIO_THROW_TIME 200
 #define MARIO_WAG_TIME 300
+#define MARIO_PIPE_TIME 1500
+#define MARIO_SWITCH_SCENCE_TIME 3000
 
 #define MARIO_distanmove 32
 
@@ -242,7 +246,8 @@ public:
 	DWORD hold_start;
 	DWORD throw_start;
 	DWORD wag_start;
-	
+	DWORD pipe_start;
+	DWORD switch_scence_start;
 	bool iscard = false;
 	int typecard = false;
 
@@ -250,6 +255,10 @@ public:
 	vector<LPGAMEOBJECT> listball;
 	vector<LPGAMEOBJECT> listcard;
 
+	bool isCanSwitchScenceDown = false;
+	bool isCanSwitchScenceUP = false;
+	bool isSwitch = false;
+	bool isSwitchtwoScence = false;
 	bool autoleft = false;
 	bool autoright = false;
 	bool autoup = false;
@@ -264,6 +273,7 @@ public:
 
 	int scence = 0;
 	CKoopas* rua;
+	CPortal* portal;
 	int money = 0;
 	int enymy = 0;
 	int m = 4;
@@ -294,7 +304,15 @@ public:
 	virtual void Render();
 
 	void SetState(int state);
-	void SetLevel(int l) { level = l; }
+	void SetLevel(int l) 
+	{ 
+		if (level == MARIO_LEVEL_SMALL)
+		{
+			SetPosition(x, y - MARIO_BIG_BBOX_HEIGHT + MARIO_SMALL_BBOX_HEIGHT);
+		}
+		level = l;
+
+	}
 	int GetLevel() { return level; }
 	void StartUntouchable() { untouchable = 1; untouchable_start = GetTickCount64(); }
 	void StartKick() { isKick = 1; kick_start = GetTickCount64(); }

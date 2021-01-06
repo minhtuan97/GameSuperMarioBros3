@@ -47,6 +47,10 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		Grid::GetInstance()->deleteObject(this);
 		return;
 	}
+	float xcam = Camera::GetInstance()->GetCameraPosition().x;
+	float ycam = Camera::GetInstance()->GetCameraPosition().y;
+	if (x > xcam + SCREEN_WIDTH+GOOMBA_BBOX_WIDTH || x < xcam-GOOMBA_BBOX_WIDTH)
+		return;
 	if (type == 1)
 	{
 		if (GetTickCount64() - startfly > TIME_FLY && state == GOOMBA_STATE_FLY)
@@ -151,10 +155,9 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		}
 	}
 
-	DebugOut(L"gomba x=%f, y=%f\n", x, y);
+	//DebugOut(L"gomba x=%f, y=%f\n", x, y);
 	//goomba ra khoi camera
-	float xcam = Camera::GetInstance()->GetCameraPosition().x;
-	float ycam = Camera::GetInstance()->GetCameraPosition().y;
+
 	
 	if (x>xcam && x<xcam + SCREEN_WIDTH - BRICK_BBOX_WIDTH && y>ycam && y<ycam + SCREEN_HEIGHT- GOOMBA_BBOX_HEIGHT)
 		Grid::GetInstance()->Update(this);

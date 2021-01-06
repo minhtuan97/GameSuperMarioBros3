@@ -17,10 +17,13 @@
 #include "ItemSelect.h"
 #include "ScenceSelect.h"
 #include "SwitchBlock.h"
+#include "BrickMove.h"
 
 #define animationball	5
 
 using namespace std;
+
+CMario* CPlayScene::player = NULL;
 
 CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	CScene(id, filePath)
@@ -59,6 +62,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define	OBJECT_TYPE_PLANT	9
 #define	OBJECT_TYPE_ITEMSELECT	10
 #define OBJECT_TYPE_SCENCESELECT	11
+#define OBJECT_TYPE_BRICKMOVE	12
 
 #define OBJECT_TYPE_PORTAL	50
 
@@ -175,6 +179,10 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		{
 			obj = new CBrick(x, y);
 			CBrick* brick = (CBrick*)obj;
+			int r = atof(tokens[4].c_str());
+			int b = atof(tokens[5].c_str());
+			brick->right = r;
+			brick->bot = b;
 			break;
 		}
 		}
@@ -192,6 +200,9 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_MARIO:
 		if (player!=NULL) 
 		{
+			LPANIMATION_SET ani_set = animation_sets->Get(ani_set_id);
+			player->scence = id;
+			player->SetAnimationSet(ani_set);
 			DebugOut(L"[ERROR] MARIO object was created before!\n");
 			return;
 		}
@@ -320,11 +331,18 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			float ym = atof(tokens[8].c_str());
 			int scene_id = atoi(tokens[6].c_str());
 			obj = new CPortal(x, y, r, b, scene_id);
-			CPortal* c = (CPortal*)obj;
+			CPortal* c;
+			c= (CPortal*)obj;
 			c->xmario = xm;
 			c->ymario = ym;
+			c->yCPortal= atoi(tokens[9].c_str());
 		}
 		break;
+	case OBJECT_TYPE_BRICKMOVE:
+	{
+		obj = new BrickMove();
+		break;
+	}
 	default:
 		DebugOut(L"[ERR] Invalid object type: %d\n", object_type);
 		return;
@@ -425,7 +443,7 @@ void CPlayScene::Update(DWORD dt)
 		{
 			if (player == NULL)
 			{
-				player = new CMario(0,160);
+				player = new CMario(0,150);
 				player->SetAnimationSet(CAnimationSets::GetInstance()->Get(2));
 				player->scence = id;
 				player->SetState(MARIO_STATE_WALKING_RIGHT);
@@ -434,7 +452,7 @@ void CPlayScene::Update(DWORD dt)
 			}
 			if (player2 == NULL)
 			{
-				player2 = new CMario(230,160);
+				player2 = new CMario(230,150);
 				player2->SetAnimationSet(CAnimationSets::GetInstance()->Get(2));
 				player2->scence = id;
 				player2->SetLevel(MARIO_LEVEL_BIG);
@@ -451,7 +469,7 @@ void CPlayScene::Update(DWORD dt)
 			objects.at(i)->Update(dt, &objects);
 		}
 
-		if (GetTickCount64()- time >= 4000&&!isjump)
+	/*	if (GetTickCount64()- time >= 4000&&!isjump)
 		{
 			isjump = true;
 			player->SetState(MARIO_STATE_JUMP_RIGHT);
@@ -461,7 +479,7 @@ void CPlayScene::Update(DWORD dt)
 		{
 			player->SetState(MARIO_STATE_IDLE_RIGHT);
 			player->SetSpeed(0.1, 0.15f);
-		}
+		}*/
 
 		return;
 		
@@ -748,17 +766,17 @@ void CPlayScene::Render()
 		{
 			listPlant[i]->Render();
 		}
-		for (int i = 0; i < listPipe.size(); i++)
-		{
-			listPipe[i]->Render();
-		}
+
 		if (player)
 		{
 			player->Render();
 			for (int i = 0; i < player->listball.size(); i++)
 				player->listball.at(i)->Render();
 		}
-
+		for (int i = 0; i < listPipe.size(); i++)
+		{
+			listPipe[i]->Render();
+		}
 		if (player->iscard)
 		{
 			string1.Draw(2650, 260, s1);
@@ -866,13 +884,34 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 		}
 		return;
 	}
+	if (mario->GetState() == MARIO_STATE_PIPE)
+		return;
 	switch (KeyCode)
 	{
 	case DIK_N:
 		mario->SetPosition(2200, 50);
 		break;
 	case DIK_DOWN:
+		if (mario->isCanSwitchScenceDown)
+		{
+			mario->SetState(MARIO_STATE_PIPE);
+			if (mario->GetLevel() == MARIO_LEVEL_SMALL)
+				mario->SetSpeed(0, 0.01);
+			else
+				mario->SetSpeed(0, 0.02);
 
+		}
+		break;
+	case DIK_UP:
+		if (mario->isCanSwitchScenceUP)
+		{
+			mario->SetState(MARIO_STATE_PIPE);
+			if (mario->GetLevel() == MARIO_LEVEL_SMALL)
+				mario->SetSpeed(0, -0.01);
+			else
+				mario->SetSpeed(0, -0.02);
+
+		}
 		break;
 	case DIK_X:
 		if (mario->isJump||mario->isjumpX)
@@ -998,6 +1037,8 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 		return;
 	// disable control key when Mario die 
 	if (mario->GetState() == MARIO_STATE_DIE) return;
+	if (mario->GetState() == MARIO_STATE_PIPE) return;
+
 	if (game->IsKeyDown(DIK_RIGHT))
 	{
 		if (mario->state == MARIO_STATE_WALKING_LEFT)

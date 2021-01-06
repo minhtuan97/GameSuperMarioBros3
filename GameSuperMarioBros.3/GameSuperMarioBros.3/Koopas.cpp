@@ -45,7 +45,10 @@ void CKoopas::GetBoundingBox(float &left, float &top, float &right, float &botto
 void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
 	CMario* mario = CMario::GetInstance();
-
+	float xcam = Camera::GetInstance()->GetCameraPosition().x;
+	float ycam = Camera::GetInstance()->GetCameraPosition().y;
+	if (x > xcam + SCREEN_WIDTH+KOOPAS_BBOX_WIDTH || x < xcam-KOOPAS_BBOX_WIDTH)
+		return;
 	switch (type)
 	{
 	case 0:
@@ -341,12 +344,10 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		break;
 	}
 	
-	DebugOut(L"koopas x=%f, y=%f\n", x, y);
+	//DebugOut(L"koopas x=%f, y=%f\n", x, y);
 
 
 	//goomba ra khoi camera con loi
-	float xcam = Camera::GetInstance()->GetCameraPosition().x;
-	float ycam = Camera::GetInstance()->GetCameraPosition().y;
 
 	if (x > xcam && x<xcam + SCREEN_WIDTH - KOOPAS_BBOX_WIDTH&& y>ycam && y < ycam + SCREEN_HEIGHT-KOOPAS_BBOX_HEIGHT)
 		Grid::GetInstance()->Update(this);

@@ -29,7 +29,7 @@ void Cell::earseObj(LPGAMEOBJECT obj)
 			DebugOut(L"chua xoa obj \n");
 			break;
 		}
-	DebugOut(L"da xoa obj x=%f,y=%f\n",obj->x,obj->y);
+	//DebugOut(L"da xoa obj x=%f,y=%f\n",obj->x,obj->y);
 
 }
 

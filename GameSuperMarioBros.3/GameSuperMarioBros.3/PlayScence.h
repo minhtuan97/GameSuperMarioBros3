@@ -19,7 +19,7 @@ protected:
 	Map* map;
 	Grid* grid;
 	Camera* cam;
-	CMario* player;					// A play scene has to have player, right? 
+	static CMario* player;					// A play scene has to have player, right? 
 	CMario *player2;					// A play scene has to have player, right? 
 	Board* board;
 
