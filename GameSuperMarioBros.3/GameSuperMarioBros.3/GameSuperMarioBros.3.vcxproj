@@ -26,6 +26,7 @@
     <ClInclude Include="Box.h" />
     <ClInclude Include="Brick.h" />
     <ClInclude Include="BrickMove.h" />
+    <ClInclude Include="BrokenBrick.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Cell.h" />
     <ClInclude Include="Coin.h" />
@@ -63,6 +64,7 @@
     <ClCompile Include="Box.cpp" />
     <ClCompile Include="Brick.cpp" />
     <ClCompile Include="BrickMove.cpp" />
+    <ClCompile Include="BrokenBrick.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Cell.cpp" />
     <ClCompile Include="Coin.cpp" />

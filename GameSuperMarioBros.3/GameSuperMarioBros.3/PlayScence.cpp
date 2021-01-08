@@ -1039,7 +1039,7 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 	if (mario->GetState() == MARIO_STATE_DIE) return;
 	if (mario->GetState() == MARIO_STATE_PIPE) return;
 
-	if (game->IsKeyDown(DIK_RIGHT))
+	if (game->IsKeyDown(DIK_RIGHT)&&!mario->iswag)
 	{
 		if (mario->state == MARIO_STATE_WALKING_LEFT)
 		{
@@ -1060,7 +1060,7 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 
 		
 	}
-	else if (game->IsKeyDown(DIK_LEFT))
+	else if (game->IsKeyDown(DIK_LEFT)&&!mario->iswag)
 	{
 		if (mario->state == MARIO_STATE_WALKING_RIGHT)
 		{

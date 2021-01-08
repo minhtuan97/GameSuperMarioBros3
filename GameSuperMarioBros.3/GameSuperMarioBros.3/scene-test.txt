@@ -8,6 +8,7 @@
 23	textures\enemy.png	64	128	0
 24	textures\enemies-3.png	68	145	190
 25	textures\font.png	255	0	255
+29	textures\brickbroken.png	224	163	216
 30	Resources\map\map1\tileset.png	255	255	255
 
 #Map
@@ -493,6 +494,10 @@
 30214	1	86	17	102	21
 30215	18	86	34	102	21
 
+#brick broken
+36000	0	0	9	9	29
+36001	10	0	19	9	29
+
 
 #font							
 40001	3	3	155	31	25	152	28
@@ -920,6 +925,9 @@ ani_id	sprite1_id	time1	sprite2_id	time2
 30054	40045	100
 30055	40046	100
 
+#brick broken
+30100	36000	50	36001	50
+
 #
 # id	ani1	ani2	ani3
 #
@@ -964,6 +972,10 @@ ani_id	sprite1_id	time1	sprite2_id	time2
 
 #card
 29	30053	30056	30057
+
+#brick broken
+40	30100
+
 [OBJECTS]
 # type	x	y	ani_set_id	extra_settings per object type
 # type: 0 = Mario , 1 = Brick, 2 = Goomba, 3 = Koopas
