@@ -8,6 +8,9 @@
 #define BALL_WALKING_SPEED_Y 0.2f
 #define BALL_GRAVITY	0.001f
 
+#define BALL_ANIMATION_LEFT	0
+#define BALL_ANIMATION_RIGHT	1
+
 class Ball:public CGameObject
 {
 	virtual void GetBoundingBox(float& left, float& top, float& right, float& bottom);

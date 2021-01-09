@@ -6,6 +6,7 @@
 #include "Camera.h"
 #include "Utils.h"
 #include "define.h"
+#include "Grid.h"
 
 void Ball::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 {
@@ -100,9 +101,9 @@ void Ball::Render()
 {
 	int ani = 0;
 	if (nx > 0)
-		ani = 1;
+		ani = BALL_ANIMATION_RIGHT;
 	else if (nx < 0)
-		ani = 0;
+		ani = BALL_ANIMATION_LEFT;
 	animation_set->at(ani)->Render(x, y);
 }
 
