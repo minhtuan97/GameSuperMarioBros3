@@ -18,6 +18,7 @@
 #include "ScenceSelect.h"
 #include "SwitchBlock.h"
 #include "BrickMove.h"
+#include "Number3.h"
 
 #define animationball	5
 
@@ -63,6 +64,9 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define	OBJECT_TYPE_ITEMSELECT	10
 #define OBJECT_TYPE_SCENCESELECT	11
 #define OBJECT_TYPE_BRICKMOVE	12
+#define OBJECT_TYPE_NUMBER3	13
+#define OBJECT_TYPE_SELECTPLAYER	14
+#define OBJECT_TYPE_QUESTIONBRICK_2	15
 
 #define OBJECT_TYPE_PORTAL	50
 
@@ -151,9 +155,6 @@ void CPlayScene::_ParseSection_ANIMATION_SETS(string line)
 	CAnimationSets::GetInstance()->Add(ani_set_id, s);
 }
 
-/*
-	Parse a line in section [OBJECTS] 
-*/
 void CPlayScene::_ParseSection_OBJECTS(string line)
 {
 	vector<string> tokens = split(line);
@@ -168,6 +169,9 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 	int ani_set_id = atoi(tokens[3].c_str());
 
+	int cell_grid = atoi(tokens[4].c_str());
+	int row_grid = atoi(tokens[5].c_str());
+
 	CAnimationSets * animation_sets = CAnimationSets::GetInstance();
 
 	CGameObject *obj = NULL;
@@ -179,10 +183,21 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		{
 			obj = new CBrick(x, y);
 			CBrick* brick = (CBrick*)obj;
-			int r = atof(tokens[4].c_str());
-			int b = atof(tokens[5].c_str());
+			int r = atof(tokens[6].c_str());
+			int b = atof(tokens[7].c_str());
 			brick->right = r;
 			brick->bot = b;
+			break;
+		}
+		case OBJECT_TYPE_NUMBER3:
+		{
+			obj = new Number3();
+			break;
+		}
+		case OBJECT_TYPE_SELECTPLAYER:
+		{
+			obj = new SelectPlayer();
+			selectplayer = (SelectPlayer*)obj;
 			break;
 		}
 		}
@@ -217,18 +232,18 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		break;
 	case OBJECT_TYPE_GOOMBA: 
 	{
-		int nx = atof(tokens[4].c_str());
-		int type = atof(tokens[5].c_str());
+		int nx = atof(tokens[6].c_str());
+		int type = atof(tokens[7].c_str());
 		obj = new CGoomba(nx,type);
 		break;
 	}
 	case OBJECT_TYPE_SCENCESELECT:
 	{
-		int l = atoi(tokens[4].c_str());
-		int r = atoi(tokens[5].c_str());
-		int u = atoi(tokens[6].c_str());
-		int d = atoi(tokens[7].c_str());
-		int id = atoi(tokens[8].c_str());
+		int l = atoi(tokens[6].c_str());
+		int r = atoi(tokens[7].c_str());
+		int u = atoi(tokens[8].c_str());
+		int d = atoi(tokens[9].c_str());
+		int id = atoi(tokens[10].c_str());
 		obj = new ScenceSelect();
 		ScenceSelect* s = (ScenceSelect*)obj;
 		s->canleft = l;
@@ -243,9 +258,9 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_BRICK: 
 	{
 		obj = new CBrick(x,y);
-		int r = atoi(tokens[4].c_str());
-		int b = atoi(tokens[5].c_str());
-		int type = atoi(tokens[6].c_str());
+		int r = atoi(tokens[6].c_str());
+		int b = atoi(tokens[7].c_str());
+		int type = atoi(tokens[8].c_str());
 		CBrick* brick=(CBrick*)obj;
 		brick->right = r;
 		brick->bot = b;
@@ -255,8 +270,8 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	case OBJECT_TYPE_BOX:
 	{
 		obj = new Box();
-		int r = atof(tokens[4].c_str());
-		int b = atof(tokens[5].c_str());
+		int r = atof(tokens[6].c_str());
+		int b = atof(tokens[7].c_str());
 		Box* brick = (Box*)obj;
 		brick->right = r;
 		brick->bot = b;
@@ -266,7 +281,17 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	{
 		obj = new QuestionBrick(); 
 		QuestionBrick* brick = (QuestionBrick*)obj;
-		brick->iditem = atof(tokens[4].c_str());
+		brick->iditem = atof(tokens[6].c_str());
+		brick->xde = x;
+		brick->yde = y;
+		break;
+	}
+	case OBJECT_TYPE_QUESTIONBRICK_2:
+	{
+		obj = new QuestionBrick();
+		QuestionBrick* brick = (QuestionBrick*)obj;
+		brick->iditem = atoi(tokens[6].c_str());
+		brick->countColi = atoi(tokens[7].c_str());
 		brick->xde = x;
 		brick->yde = y;
 		break;
@@ -275,7 +300,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	{
 		obj = new WaterPipe();
 		WaterPipe* p = (WaterPipe*)obj;
-		int ani = atoi(tokens[4].c_str());
+		int ani = atoi(tokens[6].c_str());
 		p->ani = ani;
 		break;
 	}
@@ -283,8 +308,8 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	{
 		obj = new Item();
 		Item* item = (Item*)obj;
-		item->type= atof(tokens[4].c_str());
-		item->id= atof(tokens[5].c_str());
+		item->type= atof(tokens[6].c_str());
+		item->id= atof(tokens[7].c_str());
 		item->xde = x;
 		item->yde = y;
 		objects_item.push_back(obj);
@@ -292,9 +317,9 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	}
 	case OBJECT_TYPE_KOOPAS: 
 	{
-		float xmin = atof(tokens[4].c_str());
-		float xmax = atof(tokens[5].c_str());
-		int type = atoi(tokens[6].c_str());
+		float xmin = atof(tokens[6].c_str());
+		float xmax = atof(tokens[7].c_str());
+		int type = atoi(tokens[8].c_str());
 		obj = new CKoopas(type,x,y);
 		CKoopas* k = (CKoopas*)obj;
 		k->x_min = xmin;
@@ -304,9 +329,9 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	}
 	case OBJECT_TYPE_PLANT:
 	{
-		float ymin = atof(tokens[4].c_str());
-		float ymax = atof(tokens[5].c_str());
-		int type = atoi(tokens[6].c_str());
+		float ymin = atof(tokens[6].c_str());
+		float ymax = atof(tokens[7].c_str());
+		int type = atoi(tokens[8].c_str());
 		obj = new Plant(type, x, y);
 		Plant* k = (Plant*)obj;
 		k->y_min = ymin;
@@ -325,11 +350,11 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	}
 	case OBJECT_TYPE_PORTAL:
 		{	
-			float r = atof(tokens[4].c_str());
-			float b = atof(tokens[5].c_str());
-			float xm = atof(tokens[7].c_str());
-			float ym = atof(tokens[8].c_str());
-			int scene_id = atoi(tokens[6].c_str());
+			float r = atof(tokens[6].c_str());
+			float b = atof(tokens[7].c_str());
+			float xm = atof(tokens[9].c_str());
+			float ym = atof(tokens[10].c_str());
+			int scene_id = atoi(tokens[8].c_str());
 			obj = new CPortal(x, y, r, b, scene_id);
 			CPortal* c;
 			c= (CPortal*)obj;
@@ -343,6 +368,11 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		obj = new BrickMove();
 		break;
 	}
+	case OBJECT_TYPE_NUMBER3:
+	{
+		obj = new Number3();
+		break;
+	}
 	default:
 		DebugOut(L"[ERR] Invalid object type: %d\n", object_type);
 		return;
@@ -350,6 +380,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 
 	// General object setup
 	obj->SetPosition(x, y);
+	obj->SetGrid(cell_grid, row_grid);
 
 	LPANIMATION_SET ani_set = animation_sets->Get(ani_set_id);
 
@@ -358,7 +389,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	try
 	{
 		if (obj != NULL && !dynamic_cast<CMario*>(obj)&&!dynamic_cast<Item*>(obj))
-			grid->addObject(obj);
+			grid->addObjectOff(obj);
 	}
 	catch (const std::exception& e)
 	{
@@ -377,8 +408,6 @@ void CPlayScene::_ParseSection_MAP(string line)
 	map = Map::GetInstance();
 	map->LoadFile(pathMap, atoi(tokens[0].c_str()));
 }
-
-
 
 void CPlayScene::Load()
 {
@@ -439,50 +468,11 @@ void CPlayScene::Update(DWORD dt)
 	if (id == 0)
 	{
 		DebugOut(L"update scence intro\n");
-		if (khoitao)
-		{
-			if (player == NULL)
-			{
-				player = new CMario(0,150);
-				player->SetAnimationSet(CAnimationSets::GetInstance()->Get(2));
-				player->scence = id;
-				player->SetState(MARIO_STATE_WALKING_RIGHT);
-				player->SetLevel(MARIO_LEVEL_BIG);
-				objects.push_back(player);
-			}
-			if (player2 == NULL)
-			{
-				player2 = new CMario(230,150);
-				player2->SetAnimationSet(CAnimationSets::GetInstance()->Get(2));
-				player2->scence = id;
-				player2->SetLevel(MARIO_LEVEL_BIG);
-
-				player2->SetState(MARIO_STATE_WALKING_LEFT);
-
-				objects.push_back(player2);
-			}
-			khoitao = false;
-			
-		}
 		for (int i = 0; i < objects.size(); i++)
 		{
 			objects.at(i)->Update(dt, &objects);
 		}
-
-	/*	if (GetTickCount64()- time >= 4000&&!isjump)
-		{
-			isjump = true;
-			player->SetState(MARIO_STATE_JUMP_RIGHT);
-			
-		}
-		if (GetTickCount64() - time >= 5000&& GetTickCount64() - time <= 5100)
-		{
-			player->SetState(MARIO_STATE_IDLE_RIGHT);
-			player->SetSpeed(0.1, 0.15f);
-		}*/
-
-		return;
-		
+		return;		
 	}
 
 	if (id == 1)
@@ -531,7 +521,12 @@ void CPlayScene::Update(DWORD dt)
 						Item* item = dynamic_cast<Item*>(objects_item.at(m));
 						if (item->id == brick->iditem)
 						{
-							if (item->type == 0)item->SetSpeed(0, -0.3);
+							if (item->type == 0)
+							{
+								item->SetSpeed(0, -0.3);
+								//item->SetPosition(brick->x, brick->y);
+
+							}
 							if (item->type == 1)item->SetSpeed(0, -0.01);
 							if (item->type == 2)
 							{
@@ -640,42 +635,52 @@ void CPlayScene::Update(DWORD dt)
 				cx += 8;
 		}
 		D3DXVECTOR3 pos = cam->GetCameraPosition();
-		if (mapwidth > SCREEN_WIDTH) {
-			if (cx + 5 < SCREEN_WIDTH / 2) {
-				cx = pos.x;
-			}
-			else if (cx + SCREEN_WIDTH / 2 > mapwidth - 1) {
-				cx = mapwidth - SCREEN_WIDTH;
+		/*if (id == 5)
+		{
+			cxcount = cxcount + 0.5;
+			cx = cxcount;
+			cy = 0;
+		}
+		else*/
+		{
+			if (mapwidth > SCREEN_WIDTH) {
+				if (cx + 5 < SCREEN_WIDTH / 2) {
+					cx = pos.x;
+				}
+				else if (cx + SCREEN_WIDTH / 2 > mapwidth - 1) {
+					cx = mapwidth - SCREEN_WIDTH;
+				}
+				else {
+					cx = cx + 5 + SCREEN_WIDTH / 2 - SCREEN_WIDTH;
+				}
 			}
 			else {
-				cx = cx + 5 + SCREEN_WIDTH / 2 - SCREEN_WIDTH;
+				cx = 0;
 			}
-		}
-		else {
-			cx = 0;
-		}
 
-		if (mapheight > SCREEN_HEIGHT)
-		{
-			if (cy < SCREEN_HEIGHT - 32)
+			if (mapheight > SCREEN_HEIGHT)
 			{
-				cy = 0;
+				if (cy < SCREEN_HEIGHT - 32)
+				{
+					cy = 0;
+				}
+				else if (cy > mapheight - SCREEN_HEIGHT)
+				{
+					cy = mapheight - SCREEN_HEIGHT + 32;
+				}
+				else //if (cy < mapheight - SCREEN_HEIGHT)
+				{
+					cy = cy - SCREEN_HEIGHT / 2 + 32;
+				}
 			}
-			else if (cy > mapheight - SCREEN_HEIGHT )
+			else
 			{
-				cy = mapheight - SCREEN_HEIGHT+32;
+				cy = mapheight - SCREEN_HEIGHT;
 			}
-			else //if (cy < mapheight - SCREEN_HEIGHT)
-			{
-				cy = cy - SCREEN_HEIGHT / 2 + 32;
-			}
+			if (cy < 0) cy = 0;
+			//cy -= SCREEN_HEIGHT / 2;
 		}
-		else
-		{
-			cy = mapheight - SCREEN_HEIGHT;
-		}
-		if (cy < 0) cy = 0;
-		//cy -= SCREEN_HEIGHT / 2;
+		
 
 		cam->SetCameraPosition((int)cx, (int)cy);
 		if (board != NULL)
@@ -687,17 +692,10 @@ void CPlayScene::Render()
 {
 	if (id == 0)
 	{
-		for (int i = 0; i < objects.size(); i++)
-		{
-			objects.at(i)->Render();
-		}
 		DebugOut(L"render scence intro\n");
+		CSprites* sprites = CSprites::GetInstance();
 		if (pace < height)
 		{
-			if (!khoitao)
-			{
-				CSprites* sprites = CSprites::GetInstance();
-				//int count = (height) / 16;
 				int y = height - pace;
 				for (; y >= -16; y = y - 16)
 				{
@@ -705,12 +703,18 @@ void CPlayScene::Render()
 				}
 				sprites->Get(41002)->Draw(0, height - pace);
 				pace = pace + 2;
+				objects.at(0)->Render();
 				return;
-			}
+
 		}
 		else
 		{
-				khoitao = true;
+			isCanS = true;
+		}
+		sprites->Get(41003)->Draw(0, 0);
+		for (int i = 0; i < objects.size(); i++)
+		{
+			objects.at(i)->Render();
 		}
 	}
 	if (id == 1)
@@ -738,6 +742,7 @@ void CPlayScene::Render()
 		vector<LPGAMEOBJECT> listitem;
 		vector<LPGAMEOBJECT> listPipe;
 		vector<LPGAMEOBJECT> listPlant;
+		vector<LPGAMEOBJECT> listbrick;
 
 		for (int i = 0; i < objects.size(); i++)
 		{
@@ -749,6 +754,8 @@ void CPlayScene::Render()
 				else
 					if (dynamic_cast<Plant*>(objects.at(i)))
 						listPlant.push_back(objects.at(i));
+					else if (dynamic_cast<QuestionBrick*>(objects.at(i)))
+						listbrick.push_back(objects.at(i));
 					else
 						listobject.push_back(objects.at(i));
 		}
@@ -761,7 +768,10 @@ void CPlayScene::Render()
 		{
 			listitem[i]->Render();
 		}
-
+		for (int i = 0; i < listbrick.size(); i++)
+		{
+			listbrick[i]->Render();
+		}
 		for (int i = 0; i < listPlant.size(); i++)
 		{
 			listPlant[i]->Render();
@@ -820,9 +830,22 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	//DebugOut(L"[INFO] KeyDown: %d\n", KeyCode);
 	CGame* game = CGame::GetInstance();
 	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
-
+	SelectPlayer *select= ((CPlayScene*)scence)->GetSelectPlayer();
 	if (((CPlayScene*)scence)->id == 0)
 	{
+		switch (KeyCode)
+		{
+		case DIK_DOWN:
+			select->select++;
+			break;
+		case DIK_UP:
+			select->select--;
+			break;
+		case DIK_S:
+			if(((CPlayScene*)scence)->isCanS)
+				CGame::GetInstance()->SwitchScene(1);
+			break;
+		}
 		return;
 	}
 	if (((CPlayScene*)scence)->id == 1)

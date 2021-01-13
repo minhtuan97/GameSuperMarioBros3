@@ -8,6 +8,7 @@
 #include "Mario.h"
 #include "Utils.h"
 #include "define.h"
+#include "BrokenBrick.h"
 
 CKoopas::CKoopas(int t, float x, float y)
 {
@@ -27,7 +28,12 @@ CKoopas::CKoopas(int t, float x, float y)
 		this->type = 1;
 		SetState(KOOPAS_STATE_WALKING);
 	}
-
+	if (t == 3)
+	{
+		this->type = 2;
+		SetState(KOOPAS_STATE_WALKING);
+		SetSpeed(0, KOOPAS_SPEED_Y);
+	}
 }
 
 void CKoopas::GetBoundingBox(float &left, float &top, float &right, float &bottom)
@@ -119,8 +125,8 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			//	x += nx*abs(rdx); 
 
 			// block every object first!
-			x += min_tx * dx + nx * 0.2f;
-			y += min_ty * dy + ny * 0.2f;
+			x += min_tx * dx + nx * 0.4f;
+			y += min_ty * dy + ny * 0.4f;
 
 			//DebugOut(L"nx=%d, vx=%f\n", nx, vx);
 
@@ -155,7 +161,25 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 							vx = -KOOPAS_KICK_SPEED;
 						}
 						if (b->type == BRICK3)
+						{
 							b->isColi = true;
+							float left, top, right, bot;
+							b->GetBoundingBox(left, top, right, bot);
+							float xnew = left + (right - left) / 2;
+							float ynew = top + (bot - top) / 2;
+							BrokenBrick* broken1 = new BrokenBrick(xnew, ynew);
+							broken1->SetSpeed(-SPEED_BRICK_X, -SPEED_BRICK_YY);
+							BrokenBrick* broken2 = new BrokenBrick(xnew, ynew);
+							broken2->SetSpeed(SPEED_BRICK_X, -SPEED_BRICK_YY);
+							BrokenBrick* broken3 = new BrokenBrick(xnew, ynew);
+							broken3->SetSpeed(-SPEED_BRICK_X, -SPEED_BRICK_Y);
+							BrokenBrick* broken4 = new BrokenBrick(xnew, ynew);
+							broken4->SetSpeed(SPEED_BRICK_X, -SPEED_BRICK_Y);
+							Grid::GetInstance()->addObject(broken1);
+							Grid::GetInstance()->addObject(broken2);
+							Grid::GetInstance()->addObject(broken3);
+							Grid::GetInstance()->addObject(broken4);
+						}
 					}
 			
 				}
@@ -178,6 +202,22 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 							brick->isColi = true;
 							brick->SetSpeed(0, -0.1);
 						}
+						SetState(KOOPAS_STATE_DIE);
+
+					}
+					if (e->ny>0)
+					{
+						DebugOut(L"Va cham tren\n");
+					}
+					else if(e->ny<0)
+					{
+						//DebugOut(L"vy=%f\n",brick->vy);
+						//SetState(KOOPAS_STATE_DIE);
+						/*if(vy>0)
+							DebugOut(L"vy>0\n");
+						else if(vy<0)
+							DebugOut(L"vy<0\n");*/
+
 					}
 					//DebugOut(L"nx=%d, vx=%f\n", nx, vx);			
 				}
@@ -340,6 +380,18 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		}*/
 		break;
 	}
+	case 2:
+		CGameObject::Update(dt);
+		y += dy;
+		
+		if (state != KOOPAS_STATE_DIE)
+		{
+			if (y < x_min)
+				vy = KOOPAS_SPEED_Y;
+			if (y > x_max)
+				vy = -KOOPAS_SPEED_Y;
+		}
+		break;
 	default:
 		break;
 	}
@@ -412,10 +464,19 @@ void CKoopas::Render()
 		}
 		break;
 	}
+	case 2:
+		if (state == KOOPAS_STATE_DIE)
+		{
+			ani = KOOPAS_ANI_DIE;
+		}
+		else
+		{
+			ani = KOOPAS_ANI_FLY;
+		}
+		break;
 	default:
 		break;
 	}
-	
 
 	animation_set->at(ani)->Render(x, y);
 
@@ -431,6 +492,8 @@ void CKoopas::SetState(int state)
 		//y += KOOPAS_BBOX_HEIGHT - KOOPAS_BBOX_HEIGHT_DIE + 1;
 		vx = 0;
 		vy = 0;
+		if (type == 2)
+			vy = KOOPAS_SPEED_Y_DIE;
 		break;
 	case KOOPAS_STATE_WALKING:
 	{

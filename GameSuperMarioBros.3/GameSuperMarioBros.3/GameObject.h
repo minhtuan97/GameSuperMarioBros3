@@ -54,6 +54,8 @@ public:
 	float vx;
 	float vy;
 
+	int cellgrid=0;
+	int rowgrid=0;
 	int nx;	 
 
 	int state;
@@ -65,6 +67,7 @@ public:
 public: 
 	void SetPosition(float x, float y) { this->x = x, this->y = y; }
 	void SetSpeed(float vx, float vy) { this->vx = vx, this->vy = vy; }
+	void SetGrid(int cell, int row) { this->cellgrid = cell; this->rowgrid = row; }
 	void GetPosition(float &x, float &y) { x = this->x; y = this->y; }
 	void GetSpeed(float &vx, float &vy) { vx = this->vx; vy = this->vy; }
 

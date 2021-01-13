@@ -43,6 +43,7 @@ void Item::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		CGameObject::Update(dt);
 		vy += GOlDEN_GRAVITY * dt;
 		y += dy;
+		if (y < 0) y = 0;
 		if (y > yde)
 		{
 			SetPosition(xde, yde);

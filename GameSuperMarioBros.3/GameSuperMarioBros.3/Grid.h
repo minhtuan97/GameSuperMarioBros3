@@ -14,6 +14,7 @@ public:
 	Grid();
 	~Grid();
 	void addObject(LPGAMEOBJECT object);
+	void addObjectOff(LPGAMEOBJECT object);
 	void GetListOfObjects(vector<LPGAMEOBJECT>* list_object);
 	void ClearObject();
 	void deleteObject(LPGAMEOBJECT object);

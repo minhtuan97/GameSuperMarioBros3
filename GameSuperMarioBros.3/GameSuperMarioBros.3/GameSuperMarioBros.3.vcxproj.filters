@@ -123,6 +123,12 @@
     <ClInclude Include="BrokenBrick.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Number3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SelectPlayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animations.cpp">
@@ -225,6 +231,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BrokenBrick.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Number3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SelectPlayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

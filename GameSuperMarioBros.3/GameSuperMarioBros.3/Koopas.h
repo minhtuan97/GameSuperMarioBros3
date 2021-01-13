@@ -3,6 +3,8 @@
 #include "GameObject.h"
 
 #define KOOPAS_WALKING_SPEED 0.02f;
+#define KOOPAS_SPEED_Y 0.02f
+#define KOOPAS_SPEED_Y_DIE 0.2f
 #define KOOPAS_KICK_SPEED 0.3f;
 #define KOOPAS_FLY_SPEED -0.2f
 
@@ -21,6 +23,7 @@
 #define KOOPAS_ANI_KICK	4
 #define KOOPAS_ANI_DIE 2
 #define KOOPAS_ANI_HOLD 2
+#define KOOPAS_ANI_FLY 14
 
 #define	KOOPAS_GREEN_ANI_FLY_RIGHT	11
 #define KOOPAS_GREEN_ANI_FLY_LEFT	12

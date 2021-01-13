@@ -45,24 +45,39 @@ Grid::~Grid()
 
 void Grid::addObject(LPGAMEOBJECT object)
 {
-	float left, top, right, bot;
-	object->GetBoundingBox(left, top, right, bot);
+		float left, top, right, bot;
+		object->GetBoundingBox(left, top, right, bot);
 
-	int cell_x_start = floor(left / cellwidth);
-	int cell_x_end = floor(right / cellwidth);
-	int cell_y_start = floor(top / cellheight);
-	int cell_y_end = floor(bot / cellheight);
+		int cell_x_start = floor(left / cellwidth);
+		int cell_x_end = floor(right / cellwidth);
+		int cell_y_start = floor(top / cellheight);
+		int cell_y_end = floor(bot / cellheight);
 
-	for(int i= cell_x_start;i<= cell_x_end;i++)
-		for(int j= cell_y_start;j<=cell_y_end;j++)
-			cells[i][j].add(object);
+		for (int i = cell_x_start; i <= cell_x_end; i++)
+			for (int j = cell_y_start; j <= cell_y_end; j++)
+				cells[i][j].add(object);
+}
 
-	//DebugOut(L"cell_x: %d, cell_y: %d\n", cell_x, cell_y);
-	//if (dynamic_cast<Torch*>(object))
-		//DebugOut(L"object duoc add x:%f, y:%f \n", object->x, object->y);
+void Grid::addObjectOff(LPGAMEOBJECT object)
+{
+	if (dynamic_cast<CBrick*>(object))
+	{
+		float left, top, right, bot;
+		object->GetBoundingBox(left, top, right, bot);
 
+		int cell_x_start = floor(left / cellwidth);
+		int cell_x_end = floor(right / cellwidth);
+		int cell_y_start = floor(top / cellheight);
+		int cell_y_end = floor(bot / cellheight);
 
-
+		for (int i = cell_x_start; i <= cell_x_end; i++)
+			for (int j = cell_y_start; j <= cell_y_end; j++)
+				cells[i][j].add(object);
+	}
+	else
+	{
+		cells[object->cellgrid][object->rowgrid].add(object);
+	}
 }
 
 void Grid::GetListOfObjects(vector<LPGAMEOBJECT>* list_object)

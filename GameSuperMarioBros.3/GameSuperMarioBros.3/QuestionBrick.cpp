@@ -4,6 +4,7 @@
 
 void QuestionBrick::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 {
+
 	if (!isColi)
 		return;
 	CGameObject::Update(dt);
@@ -13,16 +14,27 @@ void QuestionBrick::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	{
 		SetPosition(xde, yde);
 		SetSpeed(0, 0);
+		if (countColi > 0)
+		{
+			isColi = false;
+			isAddItem = false;
+			countColi--;
+		}
 	}
 }
 
 void QuestionBrick::Render()
 {
-	int ani = -1;
-	if (!isColi)
+	int ani;
+	if (countColi > 0)
 		ani = 1;
 	else
-		ani = 0;
+	{
+		if (!isColi)
+			ani = 1;
+		else
+			ani = 0;
+	}
 	if(animation_set->at(ani)!=NULL)
 		animation_set->at(ani)->Render(x, y);
 	//RenderBoundingBox();

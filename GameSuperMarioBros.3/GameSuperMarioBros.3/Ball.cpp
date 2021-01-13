@@ -7,6 +7,7 @@
 #include "Utils.h"
 #include "define.h"
 #include "Grid.h"
+#include "Box.h"
 
 void Ball::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 {
@@ -22,14 +23,18 @@ void Ball::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	vy += BALL_GRAVITY * dt;
 
 	vector<LPGAMEOBJECT> listbrick;
+	vector<LPGAMEOBJECT> listbox;
 	vector<LPGAMEOBJECT> listwaterpipe;
 
 	listbrick.clear();
+	listbox.clear();
 	listwaterpipe.clear();
 
 	for (int i = 0; i < coObjects->size(); i++)
 	{
 		if (dynamic_cast<CBrick*>(coObjects->at(i)))
+			listbrick.push_back(coObjects->at(i));
+		if (dynamic_cast<Box*>(coObjects->at(i)))
 			listbrick.push_back(coObjects->at(i));
 		if (dynamic_cast<WaterPipe*>(coObjects->at(i)))
 			listwaterpipe.push_back(coObjects->at(i));
@@ -43,6 +48,7 @@ void Ball::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 
 		CalcPotentialCollisions(&listbrick, coEvents);
 		CalcPotentialCollisions(&listwaterpipe, coEvents);
+		CalcPotentialCollisions(&listbox, coEvents);
 
 	// No collision occured, proceed normally
 	if (coEvents.size() == 0)
@@ -75,6 +81,13 @@ void Ball::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			LPCOLLISIONEVENT e = coEventsResult[i];
 
 			if (dynamic_cast<CBrick*>(e->obj))
+			{
+				if (e->ny != 0)
+					vy = -BALL_WALKING_SPEED_Y;
+				else if (e->nx != 0)
+					isthrow = false;
+			}
+			if (dynamic_cast<Box*>(e->obj))
 			{
 				if (e->ny != 0)
 					vy = -BALL_WALKING_SPEED_Y;

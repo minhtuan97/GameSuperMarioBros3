@@ -7,6 +7,9 @@
 class QuestionBrick:public CGameObject
 {
 public:
+	bool isColiWithKoopas = false;
+	bool isColiWithMario = false;
+	int countColi = 0;
 	int iditem;
 	int xde, yde;
 	bool isColi = false;

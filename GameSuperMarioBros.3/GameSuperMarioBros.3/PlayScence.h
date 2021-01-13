@@ -12,6 +12,7 @@
 #include "define.h"
 #include "Grid.h"
 #include "Board.h"
+#include "SelectPlayer.h"
 
 class CPlayScene: public CScene
 {
@@ -20,7 +21,7 @@ protected:
 	Grid* grid;
 	Camera* cam;
 	static CMario* player;					// A play scene has to have player, right? 
-	CMario *player2;					// A play scene has to have player, right? 
+	SelectPlayer* selectplayer;
 	Board* board;
 
 	vector<LPGAMEOBJECT> objects;	
@@ -36,6 +37,7 @@ protected:
 	int height = 188;
 	int pace = 0;
 	bool khoitao = false;
+	float cxcount = 0;
 
 	void _ParseSection_TEXTURES(string line);
 	void _ParseSection_SPRITES(string line);
@@ -48,7 +50,7 @@ public:
 	DWORD64 time_start = 0;
 	DWORD64 time = 0;
 	bool isjump = false;
-
+	bool isCanS = false;
 	CPlayScene(int id, LPCWSTR filePath);
 
 	virtual void Load();
@@ -56,7 +58,8 @@ public:
 	virtual void Render();
 	virtual void Unload();
 
-	CMario * GetPlayer() { return player; } 
+	CMario* GetPlayer() { return player; }
+	SelectPlayer * GetSelectPlayer() { return selectplayer; }
 
 	//friend class CPlayScenceKeyHandler;
 };

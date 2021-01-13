@@ -43,7 +43,7 @@ using namespace std;
 #define SCREEN_WIDTH 260
 #define SCREEN_HEIGHT 240
 
-vector<string> split(string line, string delimeter)
+vector<string> split(string line, string delimeter = "\t")
 {
 	vector<string> tokens;
 	size_t last = 0; size_t next = 0;
@@ -108,7 +108,7 @@ string ParseSection_OBJECTS(string line)
 	std::cout << "doc object\n";
 	string lineresult;
 	vector<string> tokensresult;
-	vector<string> tokens = split(line,"	");
+	vector<string> tokens = split(line);
 
 	if (tokens.size() < 3) return line; // skip invalid lines - an object set must have at least id, x, y
 
@@ -184,9 +184,17 @@ void GhiFile(LPCWSTR data_file)
 }
 int main()
 {
-	LPCWSTR st = L"scene-test.txt";
-	LPCWSTR stgrid = L"scene-test-grid.txt";
-	Docfile(st, stgrid);
+	//LPCWSTR st = L"scene0.txt";
+	//LPCWSTR stgrid = L"scene0-grid.txt";
+	Docfile(L"scene0.txt", L"scene0-grid.txt");
+	Docfile(L"scene1-1.txt", L"scene1-1-grid.txt");
+	Docfile(L"scene1-2.txt", L"scene1-2-grid.txt");
+	Docfile(L"scene3-1.txt", L"scene3-1-grid.txt");
+	Docfile(L"scene3-2.txt", L"scene3-2-grid.txt");
+	Docfile(L"scene-intro.txt", L"scene-intro-grid.txt");
+	Docfile(L"scene-test.txt", L"scene-test-grid.txt");
+
+	//Docfile(st, stgrid);
 	//GhiFile(stgrid);
 	return 0;
 }

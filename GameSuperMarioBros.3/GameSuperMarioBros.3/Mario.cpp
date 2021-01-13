@@ -990,28 +990,40 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 			if (dynamic_cast<CBrick*>(e->obj))//if brick
 			{
 				CBrick* brick = dynamic_cast<CBrick*>(e->obj);
-				if (e->ny < 0)
+				 if (e->ny > 0)
 				{
-				}
-				else if (e->ny > 0)
-				{
-					if (brick->type == 5&&!brick->isP)
+					if (brick->type == BRICK5 &&!brick->isP)
 					{
 						brick->isP = true;
 						brick->SetSpeed(0, -0.15);
 
+					}
+					if (brick->type == BRICK3)
+					{
+						Grid::GetInstance()->deleteObject(brick);
+						float l, t, r, b;
+						brick->GetBoundingBox(l, t, r, b);
+						float xnew = l + (r - l) / 2;
+						float ynew = t + (b - t) / 2;
+						BrokenBrick* broken1 = new BrokenBrick(xnew, ynew);
+						broken1->SetSpeed(-SPEED_BRICK_X, -SPEED_BRICK_YY);
+						BrokenBrick* broken2 = new BrokenBrick(xnew, ynew);
+						broken2->SetSpeed(SPEED_BRICK_X, -SPEED_BRICK_YY);
+						BrokenBrick* broken3 = new BrokenBrick(xnew, ynew);
+						broken3->SetSpeed(-SPEED_BRICK_X, -SPEED_BRICK_Y);
+						BrokenBrick* broken4 = new BrokenBrick(xnew, ynew);
+						broken4->SetSpeed(SPEED_BRICK_X, -SPEED_BRICK_Y);
+						Grid::GetInstance()->addObject(broken1);
+						Grid::GetInstance()->addObject(broken2);
+						Grid::GetInstance()->addObject(broken3);
+						Grid::GetInstance()->addObject(broken4);
 					}
 				}
 			}
 			if (dynamic_cast<QuestionBrick*>(e->obj))//if question brick
 			{
 				QuestionBrick* brick = dynamic_cast<QuestionBrick*>(e->obj);
-
-				
-				if (e->ny < 0)
-				{
-				}
-				else if (e->ny > 0)
+				if (e->ny > 0)
 				{
 					if (!brick->isColi)
 					{
@@ -1065,6 +1077,21 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 				Grid::GetInstance()->addObject(broken4);
 			}
 	}
+
+		for (int i = 0; i < listquestionbrick.size(); i++)
+		{
+			QuestionBrick* brick = dynamic_cast<QuestionBrick*>(listquestionbrick.at(i));
+			if (iswag)
+				if (AABB(brick))
+				{
+					if (!brick->isColi)
+					{
+						brick->isColi = true;
+						money++;
+						brick->SetSpeed(0, -0.15);
+					}
+				}
+		}
 	return true;
 }
 
@@ -1215,7 +1242,7 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 		FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nx, ny, rdx, rdy);
 		
 		x += min_tx * dx + nx * 0.4f;
-		//y += min_ty * dy + ny * 0.2f;
+		y += min_ty * dy + ny * 0.2f;
 		
 		if (nx != 0) vx = 0;
 		if (ny != 0) vy = 0;
@@ -1252,7 +1279,19 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 							vy = -MARIO_JUMP_DEFLECT_SPEED;
 						}
 						enymy += 100;
-
+					}
+					else if (e->ny > 0)
+					{
+						if (untouchable == 0)
+						{
+							if (level > MARIO_LEVEL_SMALL)
+							{
+								level = MARIO_LEVEL_SMALL;
+								StartUntouchable();
+							}
+							else
+								SetState(MARIO_STATE_DIE);
+						}
 					}
 					else if (e->nx != 0)
 					{

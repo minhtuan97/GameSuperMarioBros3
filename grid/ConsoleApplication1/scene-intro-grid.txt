@@ -1,3 +1,4 @@
+#Day la file demo su dung cach doc va ghi file su dung fstream
 # id	file_path	transparent_color_r	g	b
 [TEXTURES]
 0	textures\mario.png	255	255	255
@@ -890,8 +891,8 @@ ani_id	sprite1_id	time1	sprite2_id	time2
 40001	41001	100
 40002	41002	100
 40003	41004	50	41005	50	41004	50	41005	50
-40004	41008	100
-40005	41009	100
+40004	41008
+40005	41009
 #
 # id	ani1	ani2	ani3
 #
@@ -918,11 +919,11 @@ ani_id	sprite1_id	time1	sprite2_id	time2
 27	40004	40005
 	
 [OBJECTS]
-# type	x	y	ani_set_id	extra_settings per object type
+# type	x	y	ani_set_id	0	0	extra_settings per object type
 # type: 0 = Mario , 1 = Brick, 2 = Goomba, 3 = Koopas
 #
-1	0	188	24	256	224
+1	0	188	24	0	1	256	224
 #
-13	110	95	26
+13	110	95	26	0	0
 #
-14	110	110	27
+14	110	110	27	0	0

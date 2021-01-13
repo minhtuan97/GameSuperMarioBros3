@@ -43,6 +43,7 @@
     <ClInclude Include="Koopas.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="Mario.h" />
+    <ClInclude Include="Number3.h" />
     <ClInclude Include="Plant.h" />
     <ClInclude Include="PlayScence.h" />
     <ClInclude Include="Portal.h" />
@@ -50,6 +51,7 @@
     <ClInclude Include="QuestionBrick.h" />
     <ClInclude Include="Scence.h" />
     <ClInclude Include="ScenceSelect.h" />
+    <ClInclude Include="SelectPlayer.h" />
     <ClInclude Include="Sprites.h" />
     <ClInclude Include="SwitchBlock.h" />
     <ClInclude Include="Textures.h" />
@@ -79,6 +81,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Mario.cpp" />
+    <ClCompile Include="Number3.cpp" />
     <ClCompile Include="Plant.cpp" />
     <ClCompile Include="PlayScence.cpp" />
     <ClCompile Include="Portal.cpp" />
@@ -86,6 +89,7 @@
     <ClCompile Include="QuestionBrick.cpp" />
     <ClCompile Include="Scence.cpp" />
     <ClCompile Include="ScenceSelect.cpp" />
+    <ClCompile Include="SelectPlayer.cpp" />
     <ClCompile Include="Sprites.cpp" />
     <ClCompile Include="SwitchBlock.cpp" />
     <ClCompile Include="Textures.cpp" />
