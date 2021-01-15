@@ -36,11 +36,11 @@
 
 class CKoopas : public CGameObject
 {
+public:
+
 	virtual void GetBoundingBox(float &left, float &top, float &right, float &bottom);
 	virtual void Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects);
 	virtual void Render();
-
-public:
 	bool ishold = false;
 	int nx=1;
 	float x_min, x_max;

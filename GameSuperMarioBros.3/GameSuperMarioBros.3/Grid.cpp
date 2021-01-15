@@ -184,7 +184,7 @@ void Grid::deleteObject(LPGAMEOBJECT object)
 
 }
 
-void Grid::Update(LPGAMEOBJECT object)//can sua update grid
+void Grid::Update(LPGAMEOBJECT object)
 {
 	bool isUpdate = false;
 	float left, top, right, bot;

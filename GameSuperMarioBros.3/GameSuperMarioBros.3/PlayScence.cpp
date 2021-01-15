@@ -19,12 +19,15 @@
 #include "SwitchBlock.h"
 #include "BrickMove.h"
 #include "Number3.h"
+#include "Hammer.h"
+#include "HammerBros.h"
 
 #define animationball	5
 
 using namespace std;
 
 CMario* CPlayScene::player = NULL;
+//CMario* CPlayScene::playermap = NULL;
 
 CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	CScene(id, filePath)
@@ -67,6 +70,8 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define OBJECT_TYPE_NUMBER3	13
 #define OBJECT_TYPE_SELECTPLAYER	14
 #define OBJECT_TYPE_QUESTIONBRICK_2	15
+#define OBJECT_TYPE_HAMMERBROS	16
+#define OBJECT_TYPE_CARD	17
 
 #define OBJECT_TYPE_PORTAL	50
 
@@ -213,22 +218,47 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	switch (object_type)
 	{
 	case OBJECT_TYPE_MARIO:
-		if (player!=NULL) 
+		if (id == 1)
 		{
-			LPANIMATION_SET ani_set = animation_sets->Get(ani_set_id);
-			player->scence = id;
-			player->SetAnimationSet(ani_set);
-			DebugOut(L"[ERROR] MARIO object was created before!\n");
-			return;
+			//if (playermap != NULL)
+			{
+				playermap = new CMario(x,y);
+				LPANIMATION_SET ani_set = animation_sets->Get(ani_set_id);
+				playermap->scence = id;
+				playermap->SetAnimationSet(ani_set);
+				DebugOut(L"[ERROR] MARIO 1 object was created before!\n");
+				return;
+			}
+			//obj = new CMario(x,y); 
+			//obj = CMario::GetInstance();
+			//obj->SetPosition(x, y);
+			//playermap = (CMario*)obj;
+			//playermap->scence = id;
+			//DebugOut(L"[INFO] Player 1 object created!\n");
 		}
-		//obj = new CMario(x,y); 
-		obj = CMario::GetInstance();
-		obj->SetPosition(x, y);
-		player = (CMario*)obj;  
-		player->scence = id;
-		if (id == 0)
-			player->SetSpeed(0, 0);
-		DebugOut(L"[INFO] Player object created!\n");
+		else
+		{
+			if (player != NULL)
+			{
+				LPANIMATION_SET ani_set = animation_sets->Get(ani_set_id);
+				player->scence = id;
+				player->SetAnimationSet(ani_set);
+				player->iscard = false;
+				player->portal = NULL;
+				player->isCanSwitchScenceDown = false;
+				player->isCanSwitchScenceUP = false;
+				player->SetPosition(x, y);
+				DebugOut(L"[ERROR] MARIO object was created before!\n");
+				return;
+			}
+			//obj = new CMario(x,y); 
+			obj = CMario::GetInstance();
+			obj->SetPosition(x, y);
+			player = (CMario*)obj;
+			player->scence = id;
+			DebugOut(L"[INFO] Player object created!\n");
+		}
+		
 		break;
 	case OBJECT_TYPE_GOOMBA: 
 	{
@@ -324,7 +354,16 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 		CKoopas* k = (CKoopas*)obj;
 		k->x_min = xmin;
 		k->x_max = xmax;
-
+		break;
+	}
+	case OBJECT_TYPE_HAMMERBROS:
+	{
+		obj = new HammerBros();
+		float xmin = atof(tokens[6].c_str());
+		float xmax = atof(tokens[7].c_str());
+		HammerBros* k = (HammerBros*)obj;
+		k->x_min = xmin;
+		k->x_max = xmax;
 		break;
 	}
 	case OBJECT_TYPE_PLANT:
@@ -354,13 +393,15 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 			float b = atof(tokens[7].c_str());
 			float xm = atof(tokens[9].c_str());
 			float ym = atof(tokens[10].c_str());
+
 			int scene_id = atoi(tokens[8].c_str());
 			obj = new CPortal(x, y, r, b, scene_id);
 			CPortal* c;
 			c= (CPortal*)obj;
+			c->yCPortal = atoi(tokens[11].c_str());
+			c->nynewscence= atoi(tokens[12].c_str());
 			c->xmario = xm;
 			c->ymario = ym;
-			c->yCPortal= atoi(tokens[9].c_str());
 		}
 		break;
 	case OBJECT_TYPE_BRICKMOVE:
@@ -372,6 +413,20 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	{
 		obj = new Number3();
 		break;
+	}
+	case OBJECT_TYPE_CARD:
+	{
+		int x1 = atoi(tokens[1].c_str());
+		int y1 = atoi(tokens[2].c_str());
+		int x2 = atoi(tokens[3].c_str());
+		int y2 = atoi(tokens[6].c_str());
+		int x3 = atoi(tokens[7].c_str());
+		int y3 = atoi(tokens[8].c_str());
+
+		string1 = new Font(x1, y1, s1);
+		string2 = new Font(x2, y2, s2);
+		card = new Font(x3, y3);
+		return;
 	}
 	default:
 		DebugOut(L"[ERR] Invalid object type: %d\n", object_type);
@@ -479,7 +534,7 @@ void CPlayScene::Update(DWORD dt)
 	{
 		cam->SetCameraPosition(0,0);
 		board->SetPosition(8, 200);
-		player->Update(dt, &listscenceselect);
+		playermap->Update(dt, &listscenceselect);
 		return;
 	}
 	if (id >= 2)
@@ -686,6 +741,13 @@ void CPlayScene::Update(DWORD dt)
 		if (board != NULL)
 			board->SetPosition((int)cx + 8, (int)cy + 200);
 	}
+	//update sau khi hoan thanh 1 scence
+	if (player->isfinishscence)
+	{
+		DebugOut(L"doi man\n");
+		CGame::GetInstance()->SwitchScene(1);
+		player->isfinishscence = false;
+	}
 }
 
 void CPlayScene::Render()
@@ -722,10 +784,10 @@ void CPlayScene::Render()
 
 		CSprites* sprites = CSprites::GetInstance();
 		sprites->Get(40050)->Draw(5, 20);
-		board->Render(player, 300 - (GetTickCount64() - time_start) / 1000);
-		if (player)
+		board->Render(playermap, 300 - (GetTickCount64() - time_start) / 1000);
+		if (playermap)
 		{
-			player->Render();
+			playermap->Render();
 		}
 		for (int i = 0; i < listscenceselect.size(); i++)
 		{
@@ -789,9 +851,9 @@ void CPlayScene::Render()
 		}
 		if (player->iscard)
 		{
-			string1.Draw(2650, 260, s1);
-			string2.Draw(2630, 280, s2);
-			card.Draw(2770, 270, player->typecard);
+			string1->Draw(string1->x, string1->y, s1);
+			string2->Draw(string2->x, string2->y, s2);
+			card->Draw(card->x, card->y, player->typecard);
 		}
 
 		board->Render(player, 300 - (GetTickCount64() - time_start) / 1000);
@@ -829,7 +891,8 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 {
 	//DebugOut(L"[INFO] KeyDown: %d\n", KeyCode);
 	CGame* game = CGame::GetInstance();
-	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
+	CMario* mario = ((CPlayScene*)scence)->GetPlayer();
+	CMario *mariomap = ((CPlayScene*)scence)->GetPlayerMap();
 	SelectPlayer *select= ((CPlayScene*)scence)->GetSelectPlayer();
 	if (((CPlayScene*)scence)->id == 0)
 	{
@@ -850,56 +913,55 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	}
 	if (((CPlayScene*)scence)->id == 1)
 	{
-		if (!(!mario->autoleft && !mario->autoright && !mario->autodown && !mario->autoup))
+		if (!(!mariomap->autoleft && !mariomap->autoright && !mariomap->autodown && !mariomap->autoup))
 			return;
 		switch (KeyCode)
 		{
 		case DIK_LEFT:
-			if (!mario->autoleft&&mario->canleft)
+			if (!mariomap->autoleft&&mariomap->canleft)
 			{
-				mario->autoleft = true;
-				mario->x_star = mario->x;
+				mariomap->autoleft = true;
+				mariomap->x_star = mariomap->x;
 			}
-			mario->autoright = false;
-			mario->autodown = false;
-			mario->autoup = false;
+			mariomap->autoright = false;
+			mariomap->autodown = false;
+			mariomap->autoup = false;
 			break;
 		case DIK_RIGHT:
-			mario->autoleft = false;
-			if (!mario->autoright&&mario->canright)
+			mariomap->autoleft = false;
+			if (!mariomap->autoright&&mariomap->canright)
 			{
-				mario->autoright = true;
-				mario->x_star = mario->x;
+				mariomap->autoright = true;
+				mariomap->x_star = mariomap->x;
 
 			}
-			mario->autodown = false;
-			mario->autoup = false;
+			mariomap->autodown = false;
+			mariomap->autoup = false;
 			break;
 		case DIK_UP:
-			mario->autoleft = false;
-			mario->autoright = false;
-			mario->autodown = false;
-			if (!mario->autoup&&mario->canup)
+			mariomap->autoleft = false;
+			mariomap->autoright = false;
+			mariomap->autodown = false;
+			if (!mariomap->autoup&&mariomap->canup)
 			{
-				mario->autoup = true;
-				mario->y_start = mario->y;
+				mariomap->autoup = true;
+				mariomap->y_start = mariomap->y;
 			}
 			break;
 		case DIK_DOWN:
-			mario->autoleft = false;
-			mario->autoright = false;
-			if (!mario->autodown&&mario->candown)
+			mariomap->autoleft = false;
+			mariomap->autoright = false;
+			if (!mariomap->autodown&&mariomap->candown)
 			{
-				mario->autodown = true;
-				mario->y_start = mario->y;
+				mariomap->autodown = true;
+				mariomap->y_start = mariomap->y;
 			}
-			mario->autoup = false;
+			mariomap->autoup = false;
 			break;
 		case DIK_S:
-			if (mario->scenceselect > 1)
+			if (mariomap->scenceselect > 1)
 			{
-				CGame::GetInstance()->SwitchScene(mario->scenceselect);
-
+				CGame::GetInstance()->SwitchScene(mariomap->scenceselect);
 			}
 			break;
 		default:
@@ -913,6 +975,9 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	{
 	case DIK_N:
 		mario->SetPosition(2200, 50);
+		break;
+	case DIK_M:
+		mario->SetPosition(1945, 50);
 		break;
 	case DIK_DOWN:
 		if (mario->isCanSwitchScenceDown)

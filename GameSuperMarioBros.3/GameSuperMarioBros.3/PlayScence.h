@@ -21,6 +21,7 @@ protected:
 	Grid* grid;
 	Camera* cam;
 	static CMario* player;					// A play scene has to have player, right? 
+	CMario* playermap;
 	SelectPlayer* selectplayer;
 	Board* board;
 
@@ -30,9 +31,10 @@ protected:
 
 	string s1 = "COURSE CLEAR";
 	string s2 = "YOU GOT A CARD";
-	Font string1;
-	Font string2;
-	Font card;
+	Font* string1;
+	Font* string2;
+	Font* card;
+	DWORD cardstart;
 	bool iscard = false;
 	int height = 188;
 	int pace = 0;
@@ -59,6 +61,7 @@ public:
 	virtual void Unload();
 
 	CMario* GetPlayer() { return player; }
+	CMario* GetPlayerMap() { return playermap; }
 	SelectPlayer * GetSelectPlayer() { return selectplayer; }
 
 	//friend class CPlayScenceKeyHandler;

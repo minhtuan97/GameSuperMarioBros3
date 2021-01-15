@@ -15,6 +15,7 @@ class CPortal : public CGameObject
 
 public:
 	int yCPortal=0;
+	int nynewscence = 0;
 	float xmario=0, ymario=0;
 	//CPortal();
 	CPortal(float l, float t, float r, float b, int scene_id);

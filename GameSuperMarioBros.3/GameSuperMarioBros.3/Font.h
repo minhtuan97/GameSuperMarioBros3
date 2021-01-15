@@ -4,10 +4,12 @@
 
 class Font
 {
+
+public:
 	std::string s;
 	float x, y;
-public:
 	Font();
+	Font(float x, float y);
 	Font(float x, float y, std::string s);
 	~Font();
 	void Draw(float x, float y, std::string s);

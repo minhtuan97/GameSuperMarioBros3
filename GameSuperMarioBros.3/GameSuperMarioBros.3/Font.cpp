@@ -7,6 +7,12 @@ Font::Font()
 {
 }
 
+Font::Font(float x, float y)
+{
+	this->x = x;
+	this->y = y;
+}
+
 Font::Font(float x, float y, std::string s)
 {
 	this->x = x;

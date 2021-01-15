@@ -1183,4 +1183,4 @@ ani_id	sprite1_id	time1	sprite2_id	time2
 7	368	0	7	7
 #
 ## type	l	t	ani_set_id	r	b	scene_id
-50	355	0	0	375	40	4	2322	380	1
+50	355	0	0	375	40	4	2322	380	1	-1

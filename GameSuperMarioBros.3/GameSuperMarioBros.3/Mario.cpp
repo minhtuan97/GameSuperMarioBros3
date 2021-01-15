@@ -24,6 +24,8 @@
 #include "PlayScence.h"
 #include "BrickMove.h"
 #include "BrokenBrick.h"
+#include "Hammer.h"
+#include "HammerBros.h"
 
 #define TYPE_NAM	1
 #define TYPE_LA	2
@@ -134,8 +136,15 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			//pipe_start = 0;
 			float xnew = portal->xmario;
 			float ynew = portal->ymario;
+			int nynew = portal->nynewscence;
 			CGame::GetInstance()->SwitchScene(portal->GetSceneId());
+
 			SetPosition(xnew, ynew);
+			if(nynew<0)
+				if (GetLevel() == MARIO_LEVEL_SMALL)
+					SetSpeed(0, -0.01);
+				else
+					SetSpeed(0, -0.02);
 			isSwitch = false;
 			return;
 		}
@@ -144,7 +153,7 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	// Simple fall down
 	vy += MARIO_GRAVITY*dt;
 
-	if (!ispressX)
+	if (!ispressX&&state!=MARIO_STATE_DIE)
 	{
 		if (isJump && vy < -0.3f)
 		{
@@ -215,7 +224,17 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		iswag = false;
 
 	}
-	
+	if (GetTickCount64() - card_start >MARIO_SWITCH_FINISH_SCENCE_TIME&&iscard)
+	{
+		isfinishscence = true;
+		card_start = NULL;
+	}
+	if (state == MARIO_STATE_DIE)
+	{
+		x += dx;
+		y += dy;
+		return;
+	}
 	vector<LPGAMEOBJECT> listPort;
 	listPort.clear();
 	for (int i = 0; i < coObjects->size(); i++)
@@ -975,6 +994,7 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 				ItemSelect* p = dynamic_cast<ItemSelect*>(e->obj);
 				p->isColi = true;
 				listcard.push_back(p);
+				card_start = GetTickCount64();
 			}
 			if (dynamic_cast<SwitchBlock*>(e->obj))
 			{
@@ -1043,9 +1063,6 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 					x += dx;
 					y += dy;
 				}
-			}
-			if (dynamic_cast<WaterPipe*>(e->obj))
-			{
 			}
 		}
 	}
@@ -1178,37 +1195,62 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 {
 	//isColiWithKoopas = false;
 
+	vector<LPGAMEOBJECT> listenemy;
 	vector<LPGAMEOBJECT> listkoopas;
 	vector<LPGAMEOBJECT> listgoomba;
 	vector<LPGAMEOBJECT> listPlant;
 	vector<LPGAMEOBJECT> listPlantball;
+	vector<LPGAMEOBJECT> listHammerBros;
+	vector<LPGAMEOBJECT> listHammer;
+	listenemy.clear();
 	listkoopas.clear();
 	listgoomba.clear();
 	listPlant.clear();
 	listPlantball.clear();
+	listHammerBros.clear();
+	listHammer.clear();
 
 	for (int i = 0; i < listObject->size(); i++)
 	{
 		if (dynamic_cast<CKoopas*>(listObject->at(i)))
 		{
 			CKoopas* k = dynamic_cast<CKoopas*>(listObject->at(i));
-			if(!k->ishold)
+			if (!k->ishold)
+			{
 				listkoopas.push_back(listObject->at(i));
+				listenemy.push_back(listObject->at(i));
+			}
+
+		}
+		if (dynamic_cast<Hammer*>(listObject->at(i)))
+		{
+				listHammer.push_back(listObject->at(i));
+				listenemy.push_back(listObject->at(i));
+
 		}
 		if (dynamic_cast<CGoomba*>(listObject->at(i)))
 		{
 			CGoomba* k = dynamic_cast<CGoomba*>(listObject->at(i));
-				listgoomba.push_back(listObject->at(i));
+			listenemy.push_back(listObject->at(i));
+			listgoomba.push_back(listObject->at(i));
 		}
 		if (dynamic_cast<Plant*>(listObject->at(i)))
 		{
 			Plant* k = dynamic_cast<Plant*>(listObject->at(i));
+			listenemy.push_back(listObject->at(i));
 			listPlant.push_back(listObject->at(i));
 		}
 		if (dynamic_cast<BallPlant*>(listObject->at(i)))
 		{
 			BallPlant* k = dynamic_cast<BallPlant*>(listObject->at(i));
+			listenemy.push_back(listObject->at(i));
 			listPlantball.push_back(listObject->at(i));
+		}
+		if (dynamic_cast<HammerBros*>(listObject->at(i)))
+		{
+			HammerBros* k = dynamic_cast<HammerBros*>(listObject->at(i));
+			listenemy.push_back(listObject->at(i));
+			listHammerBros.push_back(listObject->at(i));
 		}
 	}
 
@@ -1216,7 +1258,7 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 	vector<LPCOLLISIONEVENT> coEventsResult;
 
 	coEvents.clear();
-
+	
 	// turn off collision when die 
 	if (state != MARIO_STATE_DIE&&!untouchable)
 	{
@@ -1224,13 +1266,32 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 		CalcPotentialCollisions(&listgoomba, coEvents);
 		//CalcPotentialCollisions(&listPlant, coEvents);
 		CalcPotentialCollisions(&listPlantball, coEvents);
+		CalcPotentialCollisions(&listHammerBros, coEvents);
+		CalcPotentialCollisions(&listHammer, coEvents);
 	}
 
 	// No collision occured, proceed normally
 	if (coEvents.size() == 0)
 	{
 		//isColiWithKoopas = false;
-
+		//check AABB va cham luc dung yen
+		/*for (int i = 0; i < listenemy.size(); i++)
+		{
+			if (AABB(listenemy.at(i)))
+			{
+				if (untouchable == 0)
+				{
+					if (level > MARIO_LEVEL_SMALL)
+					{
+						level = MARIO_LEVEL_SMALL;
+						StartUntouchable();
+					}
+					else
+						SetState(MARIO_STATE_DIE);
+				}
+				return;
+			}
+		}*/
 	}
 	else
 	{
@@ -1242,7 +1303,7 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 		FilterCollision(coEvents, coEventsResult, min_tx, min_ty, nx, ny, rdx, rdy);
 		
 		x += min_tx * dx + nx * 0.4f;
-		y += min_ty * dy + ny * 0.2f;
+		y += min_ty * dy + ny * 0.3f;
 		
 		if (nx != 0) vx = 0;
 		if (ny != 0) vy = 0;
@@ -1335,6 +1396,93 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 
 					}
 				}
+			}
+			if (dynamic_cast<HammerBros*>(e->obj))
+			{
+
+				HammerBros* h = dynamic_cast<HammerBros*>(e->obj);
+				{
+					if (e->ny < 0)
+					{
+						if (h->GetState() != HammerBros_STATE_DIE)
+						{
+							h->SetState(HammerBros_STATE_DIE);
+							//h->iskilltop = true;
+							vy = -MARIO_JUMP_DEFLECT_SPEED;
+							enymy += 100;
+						}
+					}
+					else if (e->ny > 0)
+					{
+						if (untouchable == 0)
+						{
+							if (level > MARIO_LEVEL_SMALL)
+							{
+								level = MARIO_LEVEL_SMALL;
+								StartUntouchable();
+							}
+							else
+								SetState(MARIO_STATE_DIE);
+						}
+					}
+					if (e->nx != 0)
+					{
+						if (level == MARIO_LEVEL_RACCOON)
+						{
+							if (iswag)
+							{
+								/*if (this->nx * e->nx < 0)
+								{
+									koopas->SetState(KOOPAS_STATE_DIE);
+									koopas->SetSpeed(this->nx * 0.1, -0.2);
+								}*/
+							}
+							else
+							{
+								if (untouchable == 0)
+								{
+									if (level > MARIO_LEVEL_SMALL)
+									{
+										level = MARIO_LEVEL_SMALL;
+										StartUntouchable();
+									}
+									else
+										SetState(MARIO_STATE_DIE);
+								}
+							}
+						}
+						else
+						{
+							if (untouchable == 0)
+							{
+								if (level > MARIO_LEVEL_SMALL)
+								{
+									level = MARIO_LEVEL_SMALL;
+									StartUntouchable();
+								}
+								else
+									SetState(MARIO_STATE_DIE);
+							}
+						}
+
+					}
+				}
+			}
+			if (dynamic_cast<Hammer*>(e->obj))
+			{
+
+				Hammer* h = dynamic_cast<Hammer*>(e->obj);
+				if(e->ny!=0||e->nx!=0)
+					if (untouchable == 0)
+					{
+						if (level > MARIO_LEVEL_SMALL)
+						{
+							level = MARIO_LEVEL_SMALL;
+							StartUntouchable();
+						}
+						else
+							SetState(MARIO_STATE_DIE);
+					}
 			}
 			if (dynamic_cast<CGoomba*>(e->obj))
 			{
@@ -1506,6 +1654,26 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 							SetState(MARIO_STATE_DIE);
 					}
 				}
+		}
+	}
+	//xet va cham quay duoi voi hammerbros
+	for (int i = 0; i < listHammerBros.size(); i++)
+	{
+		if (AABB(listHammerBros.at(i)))
+		{
+			if (level == MARIO_LEVEL_RACCOON && iswag)
+			{
+				HammerBros* h = dynamic_cast<HammerBros*>(listHammerBros.at(i));
+
+				if (h->GetState() != HammerBros_STATE_DIE)
+				{
+					h->SetState(HammerBros_STATE_DIE);
+					//h->iskilltop = true;
+					vy = -MARIO_JUMP_DEFLECT_SPEED;
+					enymy += 100;
+				}
+				enymy += 100;
+			}
 		}
 	}
 }

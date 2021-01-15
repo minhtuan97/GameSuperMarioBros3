@@ -1,5 +1,5 @@
 [SETTINGS]
-start	5
+start	0
 #scene list
 [SCENES]
 2	scene-test-grid.txt
@@ -8,4 +8,4 @@ start	5
 0	scene-intro-grid.txt
 4	scene1-2-grid.txt
 5	scene3-1-grid.txt
-6	scene3-1-grid.txt
+6	scene3-2-grid.txt

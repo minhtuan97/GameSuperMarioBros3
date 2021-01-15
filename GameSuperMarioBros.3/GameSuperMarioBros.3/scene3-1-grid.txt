@@ -988,7 +988,7 @@ ani_id	sprite1_id	time1	sprite2_id	time2
 # type	x	y	ani_set_id	0	0	extra_settings per object type
 # type: 0 = Mario , 1 = Brick, 2 = Goomba, 3 = Koopas
 # MARIO
-0	1950	10	2	0	0
+0	50	10	2	0	0
 # BRICK
 1	0	112	24	0	0	160	193	0
 1	1919	160	24	14	1	2044	191	0
@@ -1133,5 +1133,5 @@ ani_id	sprite1_id	time1	sprite2_id	time2
 #ItemSelect
 # --- SCENE PORTAL ----
 # type	l	t	ani_set_id	0	0	r	b	scene_id
-#50	2256	90	0	17	0	2290	113	3	130	30
+50	1941	87	0	14	0	1961	95	6	132	140	-1	-1
 

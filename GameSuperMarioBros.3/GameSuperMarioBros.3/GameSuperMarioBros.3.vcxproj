@@ -36,6 +36,8 @@
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Goomba.h" />
     <ClInclude Include="Grid.h" />
+    <ClInclude Include="Hammer.h" />
+    <ClInclude Include="HammerBros.h" />
     <ClInclude Include="Header.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="ItemSelect.h" />
@@ -75,6 +77,8 @@
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="Goomba.cpp" />
     <ClCompile Include="Grid.cpp" />
+    <ClCompile Include="Hammer.cpp" />
+    <ClCompile Include="HammerBros.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="ItemSelect.cpp" />
     <ClCompile Include="Koopas.cpp" />

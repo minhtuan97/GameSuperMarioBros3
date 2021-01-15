@@ -230,6 +230,7 @@
 #define MARIO_WAG_TIME 400
 #define MARIO_PIPE_TIME 1500
 #define MARIO_SWITCH_SCENCE_TIME 3000
+#define MARIO_SWITCH_FINISH_SCENCE_TIME 5000
 
 #define MARIO_distanmove 32
 
@@ -250,8 +251,10 @@ public:
 	DWORD throw_start;
 	DWORD wag_start;
 	DWORD pipe_start;
+	DWORD card_start;
 	DWORD switch_scence_start;
 	bool iscard = false;
+	bool isfinishscence = false;
 	int typecard = false;
 
 	vector<LPGAMEOBJECT> listweapon;

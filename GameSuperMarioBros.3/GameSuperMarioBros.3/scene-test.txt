@@ -1168,9 +1168,11 @@ ani_id	sprite1_id	time1	sprite2_id	time2
 #
 #ItemSelect
 10	2687	336	27
+#card
+17	2650	260	2630	280	2770	270
 #
 # --- SCENE PORTAL ----
 # type	l	t	ani_set_id	r	b	scene_id
-50	2258	98	0	2283	113	3	130	0	-1
+50	2258	98	0	2283	113	3	130	0	-1	1
 #50	100	390	0	120	400	2
 
