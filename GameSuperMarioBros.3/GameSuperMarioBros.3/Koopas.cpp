@@ -152,15 +152,19 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 					CBrick* b = dynamic_cast<CBrick*>(e->obj);
 					if (nx != 0)
 					{
-						if (nx > 0)
+						if (state== KOOPAS_STATE_KICK)
 						{
-							vx = KOOPAS_KICK_SPEED;
+							if (nx > 0)
+							{
+								vx = KOOPAS_KICK_SPEED;
+							}
+							else if (nx < 0)
+							{
+								vx = -KOOPAS_KICK_SPEED;
+							}
 						}
-						else if (nx < 0)
-						{
-							vx = -KOOPAS_KICK_SPEED;
-						}
-						if (b->type == BRICK3)
+						if(state!= KOOPAS_STATE_WALKING)
+							if (b->type == BRICK3)
 						{
 							b->isColi = true;
 							float left, top, right, bot;
