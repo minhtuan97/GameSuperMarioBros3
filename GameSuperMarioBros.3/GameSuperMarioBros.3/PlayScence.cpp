@@ -520,9 +520,9 @@ void CPlayScene::Update(DWORD dt)
 	// We know that Mario is the first object in the list hence we won't add him into the colliable object list
 	// TO-DO: This is a "dirty" way, need a more organized way 
 
-	if (id == 0)
+	if (id == SCENCE_ID_INTRO)
 	{
-		DebugOut(L"update scence intro\n");
+		//DebugOut(L"update scence intro\n");
 		for (int i = 0; i < objects.size(); i++)
 		{
 			objects.at(i)->Update(dt, &objects);
@@ -530,14 +530,14 @@ void CPlayScene::Update(DWORD dt)
 		return;		
 	}
 
-	if (id == 1)
+	if (id == SCENCE_ID_MAP)
 	{
 		cam->SetCameraPosition(0,0);
 		board->SetPosition(8, 200);
 		playermap->Update(dt, &listscenceselect);
 		return;
 	}
-	if (id >= 2)
+	if (id > SCENCE_ID_MAP)
 	{
 		vector<LPGAMEOBJECT> coObjects;
 		//for (size_t i = 1; i < objects.size(); i++)
@@ -586,7 +586,7 @@ void CPlayScene::Update(DWORD dt)
 							if (item->type == 2)
 							{
 								item->SetPosition(brick->x, brick->y);
-								item->SetSpeed(0, -0.3);
+								item->SetSpeed(0, -SPEED_ITEM_Y);
 							}
 							grid->addObject(item);
 							brick->isAddItem = true;
@@ -739,12 +739,12 @@ void CPlayScene::Update(DWORD dt)
 
 		cam->SetCameraPosition((int)cx, (int)cy);
 		if (board != NULL)
-			board->SetPosition((int)cx + 8, (int)cy + 200);
+			board->SetPosition((int)cx + BROAD_X, (int)cy + BROAD_Y);
 	}
 	//update sau khi hoan thanh 1 scence
 	if (player->isfinishscence)
 	{
-		DebugOut(L"doi man\n");
+		//DebugOut(L"doi man\n");
 		CGame::GetInstance()->SwitchScene(1);
 		player->isfinishscence = false;
 	}
@@ -759,12 +759,12 @@ void CPlayScene::Render()
 		if (pace < height)
 		{
 				int y = height - pace;
-				for (; y >= -16; y = y - 16)
+				for (; y >= MAN_INTRO_X_MIN; y = y +MAN_INTRO_X_MIN)
 				{
-					sprites->Get(41001)->Draw(0, y);
+					sprites->Get(MAN_SPRITE_ID)->Draw(0, y);
 				}
-				sprites->Get(41002)->Draw(0, height - pace);
-				pace = pace + 2;
+				sprites->Get(MAN_SPRITE_ID2)->Draw(0, height - pace);
+				pace = pace + MAN_YUPDATE;
 				objects.at(0)->Render();
 				return;
 
@@ -773,18 +773,18 @@ void CPlayScene::Render()
 		{
 			isCanS = true;
 		}
-		sprites->Get(41003)->Draw(0, 0);
+		sprites->Get(MAN_SPRITE_ID3)->Draw(0, 0);
 		for (int i = 0; i < objects.size(); i++)
 		{
 			objects.at(i)->Render();
 		}
 	}
-	if (id == 1)
+	if (id == SCENCE_ID_MAP)
 	{
 
 		CSprites* sprites = CSprites::GetInstance();
-		sprites->Get(40050)->Draw(5, 20);
-		board->Render(playermap, 300 - (GetTickCount64() - time_start) / 1000);
+		sprites->Get(MAN_SPRITE_MAP)->Draw(WORLDMAP_X, WORLDMAN_Y);
+		board->Render(playermap, TIME_MAX - (GetTickCount64() - time_start) / 1000);
 		if (playermap)
 		{
 			playermap->Render();
@@ -795,7 +795,7 @@ void CPlayScene::Render()
 		}
 		return;
 	}
-	if (id >= 2)
+	if (id > SCENCE_ID_MAP)
 	{
 		map->DrawMap();
 		grid->GetListOfObjects(&objects);
@@ -856,7 +856,7 @@ void CPlayScene::Render()
 			card->Draw(card->x, card->y, player->typecard);
 		}
 
-		board->Render(player, 300 - (GetTickCount64() - time_start) / 1000);
+		board->Render(player, TIME_MAX - (GetTickCount64() - time_start) / 1000);
 	}
 
 }
@@ -894,7 +894,7 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	CMario* mario = ((CPlayScene*)scence)->GetPlayer();
 	CMario *mariomap = ((CPlayScene*)scence)->GetPlayerMap();
 	SelectPlayer *select= ((CPlayScene*)scence)->GetSelectPlayer();
-	if (((CPlayScene*)scence)->id == 0)
+	if (((CPlayScene*)scence)->id == SCENCE_ID_INTRO)
 	{
 		switch (KeyCode)
 		{
@@ -911,7 +911,7 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 		}
 		return;
 	}
-	if (((CPlayScene*)scence)->id == 1)
+	if (((CPlayScene*)scence)->id == SCENCE_ID_MAP)
 	{
 		if (!(!mariomap->autoleft && !mariomap->autoright && !mariomap->autodown && !mariomap->autoup))
 			return;
@@ -959,7 +959,7 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 			mariomap->autoup = false;
 			break;
 		case DIK_S:
-			if (mariomap->scenceselect > 1)
+			if (mariomap->scenceselect > SCENCE_ID_MAP)
 			{
 				CGame::GetInstance()->SwitchScene(mariomap->scenceselect);
 			}
@@ -984,9 +984,9 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 		{
 			mario->SetState(MARIO_STATE_PIPE);
 			if (mario->GetLevel() == MARIO_LEVEL_SMALL)
-				mario->SetSpeed(0, 0.01);
+				mario->SetSpeed(0, MARIOSAMLL_SPEED_Y_PIPE);
 			else
-				mario->SetSpeed(0, 0.02);
+				mario->SetSpeed(0, MARIOSUPPER_SPEED_Y_PIPE);
 
 		}
 		break;
@@ -995,9 +995,9 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 		{
 			mario->SetState(MARIO_STATE_PIPE);
 			if (mario->GetLevel() == MARIO_LEVEL_SMALL)
-				mario->SetSpeed(0, -0.01);
+				mario->SetSpeed(0, -MARIOSAMLL_SPEED_Y_PIPE);
 			else
-				mario->SetSpeed(0, -0.02);
+				mario->SetSpeed(0, -MARIOSUPPER_SPEED_Y_PIPE);
 
 		}
 		break;
@@ -1026,7 +1026,7 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 		if (mario->isJump&&!mario->isBonusvy&&mario->GetLevel()==MARIO_LEVEL_RACCOON)
 		{
 			mario->isfly = true;
-			mario->SetSpeed(mario->vx, -0.1);
+			mario->SetSpeed(mario->vx, -MARIO_SPEED_Y_FLY);
 		}
 		break;
 	case DIK_A: 
@@ -1035,7 +1035,7 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 		{
 			if (!mario->isthrow)
 			{
-				if (mario->listball.size() < 3)
+				if (mario->listball.size() < MAX_BALL)
 				{
 					Ball* b = new Ball();
 					b->SetPosition(mario->x, mario->y);
@@ -1079,11 +1079,11 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 {
 	CGame* game = CGame::GetInstance();
 	CMario* mario = ((CPlayScene*)scence)->GetPlayer();
-	if (((CPlayScene*)scence)->id == 0)
+	if (((CPlayScene*)scence)->id == SCENCE_ID_INTRO)
 	{
 		return;
 	}
-	if (((CPlayScene*)scence)->id == 1) return;
+	if (((CPlayScene*)scence)->id == SCENCE_ID_MAP) return;
 	switch (KeyCode)
 	{
 	case DIK_X:

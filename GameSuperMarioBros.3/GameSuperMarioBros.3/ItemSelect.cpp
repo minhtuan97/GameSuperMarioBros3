@@ -8,8 +8,8 @@ void ItemSelect::GetBoundingBox(float& left, float& top, float& right, float& bo
 {
 	left = x;
 	top = y;
-	right = x + 16;
-	bottom = y + 16;
+	right = x + ItemSelect_BBOX_WIDTH;
+	bottom = y + ItemSelect_BBOX_HEIGHT;
 }
 
 void ItemSelect::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -22,11 +22,11 @@ void ItemSelect::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	{
 		ani_start = GetTickCount64();
 		type++;
-		if (type > 2)
-			type = 0;
+		if (type > ItemSelect_TYPE_SAO)
+			type = ItemSelect_TYPE_NAM;
 	}
 	if (isColi)
-		vy = -0.1f;
+		vy = -ITEMSELECT_SPEED_Y;
 
 	float xcam = Camera::GetInstance()->GetCameraPosition().x;
 	float ycam = Camera::GetInstance()->GetCameraPosition().y;

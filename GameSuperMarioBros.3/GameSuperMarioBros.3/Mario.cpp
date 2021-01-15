@@ -142,9 +142,9 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 			SetPosition(xnew, ynew);
 			if(nynew<0)
 				if (GetLevel() == MARIO_LEVEL_SMALL)
-					SetSpeed(0, -0.01);
+					SetSpeed(0, -SPEED_MARIO_SMALL_PIE);
 				else
-					SetSpeed(0, -0.02);
+					SetSpeed(0, -SPEED_MARIO_SUPPER_PIE);
 			isSwitch = false;
 			return;
 		}
@@ -155,23 +155,23 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 
 	if (!ispressX&&state!=MARIO_STATE_DIE)
 	{
-		if (isJump && vy < -0.3f)
+		if (isJump && vy < -MARIO_JUMP_SPEED_Y_MAX)
 		{
 			isBonusvy = false;
-			vy = -0.28f;
+			vy = -MARIO_JUMP_SPEED_YY;
 		}
 		if (iswalking)
 		{//if (state == MARIO_STATE_WALKING_RIGHT)
 			if (nx > 0)
 			{
-				vx -= 0.15 * MARIO_GRAVITY * dt;
+				vx -= MARIO_GRAVITY_X * dt;
 				if (vx < 0)
 					SetState(MARIO_STATE_IDLE);
 			}
 			//if (state == MARIO_STATE_WALKING_LEFT)
 			if (nx < 0)
 			{
-				vx += 0.15 * MARIO_GRAVITY * dt;
+				vx += MARIO_GRAVITY_X * dt;
 				if (vx > 0)
 					SetState(MARIO_STATE_IDLE);
 			}
@@ -649,9 +649,9 @@ void CMario::Render()
 	}
 	int alpha = 255;
 	if (untouchable) alpha = 128;
-	if (scence == 1)
+	if (scence == SCENCE_ID_MAP)
 	{
-		ani = 136;
+		ani = ANIMATION_MARIO_MAP;
 	}
 	animation_set->at(ani)->Render(x, y, alpha);
 	RenderBoundingBox();
@@ -666,41 +666,40 @@ void CMario::SetState(int state)
 	{
 	case MARIO_STATE_WALKING_RIGHT:
 		//vx = MARIO_WALKING_SPEED;
-		if (scence == 0)
-		{	
-			vx = 0.05f;
-			vy = 0;
-			nx = 1;
-			if (!isJump)
-				CGameObject::SetState(state);
-			iswalking = true;
-		}
-		else
+		//if (scence == 0)
+		//{	
+		//	vx = 0.05f;
+		//	vy = 0;
+		//	nx = 1;
+		//	if (!isJump)
+		//		CGameObject::SetState(state);
+		//	iswalking = true;
+		//}
+		//else
 		{
-			if (vx < 0.1f)
-				vx += 0.005f;
+			if (vx < MARIO_SPEED_X_MAX)
+				vx += MARIO_SPEED_GX;
 			nx = 1;
 			if (!isJump)
 				CGameObject::SetState(state);
 			iswalking = true;
 		}
-		
 		break;
 	case MARIO_STATE_WALKING_LEFT: 
 		//vx = -MARIO_WALKING_SPEED;
-		if (scence == 0)
+		//if (scence == 0)
+		//{
+		//		vx = -0.05f;
+		//		vy = 0;
+		//	nx = -1;
+		//	if (!isJump)
+		//		CGameObject::SetState(state);
+		//	iswalking = true;
+		//}
+		//else
 		{
-				vx = -0.05f;
-				vy = 0;
-			nx = -1;
-			if (!isJump)
-				CGameObject::SetState(state);
-			iswalking = true;
-		}
-		else
-		{
-			if (vx > -0.1f)
-				vx -= 0.005f;
+			if (vx > -MARIO_SPEED_X_MAX)
+				vx -= MARIO_SPEED_GX;
 			nx = -1;
 			if (!isJump)
 				CGameObject::SetState(state);
@@ -709,8 +708,8 @@ void CMario::SetState(int state)
 		break;
 	case MARIO_STATE_RUN_LEFT:
 		//vx = -MARIO_WALKING_SPEED;
-		if (vx > -0.2f)
-			vx -= 0.01f;
+		if (vx > -MARIO_SPEED_X_MAXRUN)
+			vx -= MARIO_WALKING_SPEED;
 		nx = -1;
 		if (!isJump)
 			CGameObject::SetState(state);
@@ -718,8 +717,8 @@ void CMario::SetState(int state)
 		break;
 	case MARIO_STATE_RUN_RIGHT:
 		//vx = MARIO_WALKING_SPEED;
-		if (vx < 0.2f)
-			vx += 0.01f;
+		if (vx < MARIO_SPEED_X_MAXRUN)
+			vx += MARIO_WALKING_SPEED;
 		nx = 1;
 		if (!isJump)
 			CGameObject::SetState(state);
@@ -734,7 +733,7 @@ void CMario::SetState(int state)
 			CGameObject::SetState(state);
 		isJump = true;		
 		if (ispressX == true)
-			vy = -0.23f;
+			vy = -MARIO_JUMP_SPEED_Y_PRESSX;
 
 		else
 		{
@@ -752,7 +751,7 @@ void CMario::SetState(int state)
 		CGameObject::SetState(state);
 		isJump = true;
 		if (ispressX == true)
-			vy = -0.23f;
+			vy = -MARIO_JUMP_SPEED_Y_PRESSX;
 		else
 			if (isBonusvy)
 			{
@@ -776,16 +775,16 @@ void CMario::SetState(int state)
 		break;
 	case MARIO_STATE_HOLD_LEFT:
 		CGameObject::SetState(state);
-		if (vx > -0.1f)
-			vx -= 0.005f;
+		if (vx > -MARIO_SPEED_X_MAX)
+			vx -= MARIO_SPEED_GX;
 		nx = -1;
 		iswalking = true;
 		break;
 
 	case MARIO_STATE_HOLD_RIGHT:
 		CGameObject::SetState(state);
-		if (vx < 0.1f)
-			vx += 0.005f;
+		if (vx < MARIO_SPEED_X_MAX)
+			vx += MARIO_SPEED_GX;
 		nx = 1;
 		iswalking = true;
 		break;
@@ -1015,7 +1014,7 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 					if (brick->type == BRICK5 &&!brick->isP)
 					{
 						brick->isP = true;
-						brick->SetSpeed(0, -0.15);
+						brick->SetSpeed(0, -SPEED_BRICK_JUMP_Y);
 
 					}
 					if (brick->type == BRICK3)
@@ -1049,7 +1048,7 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 					{
 						brick->isColi = true;
 						money++;
-						brick->SetSpeed(0, -0.15);
+						brick->SetSpeed(0, -SPEED_BRICK_JUMP_Y);
 					}
 					isBonusvy = false;
 				}
@@ -1380,7 +1379,7 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 							}
 							rua = koopas;
 						}
-						else if (koopas->GetState() == KOOPAS_STATE_WALKING|| koopas->GetState() == KOOPAS_STATE_FLY)
+						else if (koopas->GetState() == KOOPAS_STATE_KICK || koopas->GetState() == KOOPAS_STATE_WALKING|| koopas->GetState() == KOOPAS_STATE_FLY)
 						{
 							if (untouchable == 0)
 							{
@@ -1528,8 +1527,8 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 							if (this->nx * e->nx < 0)
 							{
 								goomba->SetState(GOOMBA_STATE_DIE);
-								goomba->SetSpeed(this->nx * 0.1, -0.2);
-								vy -= 0.01;
+								goomba->SetSpeed(this->nx * SPEED_GOOMBA_X_DIE, -SPEED_GOOMBA_Y_DIE);
+								//vy -= 0.01;
 							}
 						}
 						else

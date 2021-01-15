@@ -7,9 +7,8 @@ SwitchBlock::SwitchBlock(float x, float y)
 {
 	this->x = x;
 	this->y = y;
-	int ani_set_id = 28;
 	CAnimationSets* animation_sets = CAnimationSets::GetInstance();
-	LPANIMATION_SET ani_set = animation_sets->Get(ani_set_id);
+	LPANIMATION_SET ani_set = animation_sets->Get(ANIMATION_ID_SWITCHBLOCK);
 	SetAnimationSet(ani_set);
 }
 
@@ -17,12 +16,12 @@ void SwitchBlock::GetBoundingBox(float& left, float& top, float& right, float& b
 {
 	left = x;
 	top = y;
-	right = x + 16;
-	bottom = y + 16;
+	right = x + SWITCHBLOCK_WIDTH;
+	bottom = y + SWITCHBLOCK_HEIGHT;
 	if (isColi)
 	{
-		right = x + 8;
-		bottom = y + 8;
+		right = x + SWITCHBLOCK_WIDTH/2;
+		bottom = y + SWITCHBLOCK_HEIGHT/2;
 	}
 }
 

@@ -5,6 +5,9 @@
 #define G	0.001f
 #define TIME_BRICK_BROKEN	500
 
+#define BRICKBROKEN_BBOX_WIDTH  9
+#define BRICKBROKEN_BBOX_HEIGHT 9
+
 class BrokenBrick:public CGameObject
 {
 public:

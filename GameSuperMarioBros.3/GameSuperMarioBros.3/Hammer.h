@@ -10,6 +10,8 @@
 #define TIME_SPEED_VY_3	2600
 #define TIME_HAMMER	5500
 
+#define HAMMER_SPEED_Y	0.1f
+
 class Hammer:public CGameObject
 {
 public:

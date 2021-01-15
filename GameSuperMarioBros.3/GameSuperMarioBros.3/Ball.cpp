@@ -9,6 +9,8 @@
 #include "Grid.h"
 #include "Box.h"
 
+#define GOOMBA_SPEED_Y_DIE	0.1
+
 void Ball::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 {
 	left = x;
@@ -197,7 +199,7 @@ void Ball::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 			{
 				CGoomba* goomba = dynamic_cast<CGoomba*>(e->obj);
 				goomba->SetState(GOOMBA_STATE_DIE);
-				goomba->SetSpeed(0, -0.1);
+				goomba->SetSpeed(0, -GOOMBA_SPEED_Y_DIE);
 				isthrow = false;
 			}
 		}

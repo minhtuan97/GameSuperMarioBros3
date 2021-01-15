@@ -20,8 +20,8 @@ void BrokenBrick::GetBoundingBox(float& l, float& t, float& r, float& b)
 {
 	l = x;
 	t = y;
-	r = x + 9;
-	b = y + 9;
+	r = x + BRICKBROKEN_BBOX_WIDTH;
+	b = y + BRICKBROKEN_BBOX_HEIGHT;
 }
 
 void BrokenBrick::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)

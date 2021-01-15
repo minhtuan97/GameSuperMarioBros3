@@ -5,7 +5,7 @@ Camera* Camera::__instance = NULL;
 Camera::Camera()
 {
 	cameraPosition = D3DXVECTOR3(0, 0, 0);
-	Setwidthheight(260,180);
+	Setwidthheight(CAMERA_WIDTH, CAMERA_HEIGHT);
 }
 
 Camera* Camera::GetInstance()

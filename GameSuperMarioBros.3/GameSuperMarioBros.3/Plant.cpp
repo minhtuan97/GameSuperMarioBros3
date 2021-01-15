@@ -9,8 +9,8 @@ void Plant::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 {
 	left = x;
 	top = y;
-	right = x + 16;
-	bottom = y + 32;
+	right = x + BRICK_PLANT_WIDTH;
+	bottom = y + BRICK_PLANT_HEIGHT;
 }
 
 void Plant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -71,7 +71,7 @@ void Plant::Render()
 	int ani = 0;
 	switch (type)
 	{
-	case 0:
+	case PLANT_TYPE0:
 	{
 		if (nx < 0)
 		{
@@ -89,10 +89,10 @@ void Plant::Render()
 		}
 	}
 		break;
-	case 1:
+	case PLANT_TYPE1:
 		ani = 0;
 		break;
-	case 2:
+	case PLANT_TYPE2:
 		if (nx < 0)
 		{
 			if (ny > 0)

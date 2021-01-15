@@ -30,11 +30,11 @@ void Hammer::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	float ycam = Camera::GetInstance()->GetCameraPosition().y;
 	if (GetTickCount64() - timecrate > 0 && GetTickCount64() - timecrate < TIME_SPEED_VY)
 	{
-		vy = -0.1f;
+		vy = -HAMMER_SPEED_Y;
 	}
 	else if (GetTickCount64() - timecrate > TIME_SPEED_VY_2 && GetTickCount64() - timecrate < TIME_SPEED_VY_3)
 	{
-		vy = 0.1f;
+		vy = HAMMER_SPEED_Y;
 		if (nx > 0)
 			vx = -SPEED_X_HAMMER;
 		else

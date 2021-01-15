@@ -25,12 +25,12 @@ CKoopas::CKoopas(int t, float x, float y)
 	}
 	if (type == 2)
 	{
-		this->type = 1;
+		this->type = KOOPAS_TYPE_2;
 		SetState(KOOPAS_STATE_WALKING);
 	}
 	if (t == 3)
 	{
-		this->type = 2;
+		this->type = KOOPAS_TYPE_3;
 		SetState(KOOPAS_STATE_WALKING);
 		SetSpeed(0, KOOPAS_SPEED_Y);
 	}
@@ -81,7 +81,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 			return;
 		}
 		CGameObject::Update(dt, coObjects);
-		vy += 0.002f * dt;
+		vy += KOOPAS_G * dt;
 
 		vector<LPGAMEOBJECT> list;
 		list.clear();
@@ -399,13 +399,13 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	//DebugOut(L"koopas x=%f, y=%f\n", x, y);
 
 
-	//goomba ra khoi camera con loi
 
 	if (x > xcam && x<xcam + SCREEN_WIDTH - KOOPAS_BBOX_WIDTH&& y>ycam && y < ycam + SCREEN_HEIGHT-KOOPAS_BBOX_HEIGHT)
 		Grid::GetInstance()->Update(this);
 
 	////xoa khỏi khi ra khoi map theo trục y
-	else if (this->y<ycam || this->y>ycam + SCREEN_HEIGHT - KOOPAS_BBOX_HEIGHT)
+	//else if (this->y<ycam || this->y>ycam + SCREEN_HEIGHT - KOOPAS_BBOX_HEIGHT)
+	if (this->y<ycam || this->y>ycam + SCREEN_HEIGHT+32)
 		Grid::GetInstance()->deleteObject(this);
 }
 
@@ -492,7 +492,7 @@ void CKoopas::SetState(int state)
 		//y += KOOPAS_BBOX_HEIGHT - KOOPAS_BBOX_HEIGHT_DIE + 1;
 		vx = 0;
 		vy = 0;
-		if (type == 2)
+		if (type == KOOPAS_TYPE_3)
 			vy = KOOPAS_SPEED_Y_DIE;
 		break;
 	case KOOPAS_STATE_WALKING:

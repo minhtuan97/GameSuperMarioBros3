@@ -1,12 +1,11 @@
 #include "Coin.h"
-
+#define ANIMATIONSET_ID_COIN 26
 Coin::Coin(float x, float y)
 {
 	this->x = x;
 	this->y = y;
-	int ani_set_id = 26;
 	CAnimationSets* animation_sets = CAnimationSets::GetInstance();
-	LPANIMATION_SET ani_set = animation_sets->Get(ani_set_id);
+	LPANIMATION_SET ani_set = animation_sets->Get(ANIMATIONSET_ID_COIN);
 	SetAnimationSet(ani_set);
 }
 

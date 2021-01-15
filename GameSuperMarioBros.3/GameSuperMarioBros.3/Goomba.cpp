@@ -15,7 +15,7 @@ CGoomba::CGoomba(int nx, int type)
 	if(nx==-1)
 		vx = -GOOMBA_WALKING_SPEED;
 	
-	if (type == 1)
+	if (type == GOOMBA_TYPE_FLY)
 		SetState(GOOMBA_STATE_FLY);
 
 }
@@ -30,12 +30,12 @@ void CGoomba::GetBoundingBox(float &left, float &top, float &right, float &botto
 		bottom = y + GOOMBA_BBOX_HEIGHT_DIE;
 	else 	
 		bottom = y + GOOMBA_BBOX_HEIGHT;
-	if (type == 1)
+	if (type == GOOMBA_TYPE_FLY)
 	{
 		if (state == GOOMBA_STATE_FLY)
-			bottom = y + 24;
+			bottom = y + GOOMBA_FLY_BBOX_HEIGHT;
 		else if(state==GOOMBA_STATE_WALKING)
-			bottom = y + 19;
+			bottom = y + GOOMBA_FLY_WALKING_BBOX_HEIGHT;
 	}
 }
 

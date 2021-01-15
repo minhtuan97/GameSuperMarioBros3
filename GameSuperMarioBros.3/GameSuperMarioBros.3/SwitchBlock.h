@@ -1,5 +1,10 @@
 #pragma once
 #include "GameObject.h"
+
+#define ANIMATION_ID_SWITCHBLOCK	28
+#define SWITCHBLOCK_WIDTH  16
+#define SWITCHBLOCK_HEIGHT 16
+
 class SwitchBlock :
     public CGameObject
 {

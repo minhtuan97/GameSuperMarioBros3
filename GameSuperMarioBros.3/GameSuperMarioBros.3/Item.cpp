@@ -9,15 +9,24 @@
 #include "Camera.h"
 
 #define	GOlDEN_GRAVITY	0.001f
+#define	NAM_GRAVITY	0.003f
 #define TYPE_GOLDEN	0
 #define TYPE_NAM	1
 #define TYPE_LA	2
+
+#define LA_SPEED_X 0.5f
+#define LA_SPEED_y 0.02f
+#define LA_SPEED_FALL_X 0.1f
+#define NAM_SPEED_X 0.05f
+
+#define HEIGHT_LA 24
+#define HEIGHT_NAM 16
 
 Item::Item():CGameObject()
 {
 	isEnable = false;
 	isfinish = false;
-	type = 1;
+	type = TYPE_NAM;
 	id = xde = yde = 0;
 }
 
@@ -60,14 +69,14 @@ void Item::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		x += dx;
 		if (y < yde)
 		{
-			vx = 0.5;
+			vx = LA_SPEED_X;
 			isFall = true;
-			vy = 0.02;
+			vy = LA_SPEED_y;
 		}
 		if (isFall)
 		{
-			if (x > xde + 24) vx = -0.1;
-			if (x < xde - 24) vx = 0.1;
+			if (x > xde + HEIGHT_LA) vx = -LA_SPEED_FALL_X;
+			if (x < xde - HEIGHT_LA) vx = LA_SPEED_FALL_X;
 		}
 		else
 			vx = 0;
@@ -78,12 +87,12 @@ void Item::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 	case TYPE_NAM:
 	{
 		CGameObject::Update(dt);
-		if (y < yde - 16)
+		if (y < yde - HEIGHT_NAM)
 		{
-			vx = 0.05f;
+			vx = NAM_SPEED_X;
 		}
 		if (vx != 0)
-			vy += 0.3*GOlDEN_GRAVITY * dt;
+			vy += NAM_GRAVITY * dt;
 		/*if (y > yde)
 		{
 			SetPosition(xde, yde);
@@ -130,7 +139,7 @@ void Item::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 				if (dynamic_cast<CBrick*>(e->obj))
 				{
 					if(iscoliwithpipe)
-						vx = -0.05f;
+						vx = -NAM_SPEED_X;
 				}
 			}
 		}

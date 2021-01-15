@@ -4,12 +4,19 @@
 #include "Camera.h"
 #include "define.h"
 
+#define BALLPLANT_BBOX_WIDTH  8
+#define BALLPLANT_BBOX_HEIGHT 8
+#define ANIMATIONSET 5
+#define BALLPLANT_SPEED_Y 0.05
+#define BALLPLANT_SPEED_Y2 0.03
+
+
 void BallPlant::GetBoundingBox(float& left, float& top, float& right, float& bottom)
 {
 	left = x;
 	top = y;
-	right = left + 8;
-	bottom = top + 8;
+	right = left + BALLPLANT_BBOX_WIDTH;
+	bottom = top + BALLPLANT_BBOX_HEIGHT;
 }
 
 void BallPlant::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
@@ -43,7 +50,7 @@ void BallPlant::Render()
 BallPlant::BallPlant(float xx, float yy, int nx, int ny)
 {
 	CAnimationSets* animation_sets = CAnimationSets::GetInstance();
-	LPANIMATION_SET ani_set = animation_sets->Get(5);
+	LPANIMATION_SET ani_set = animation_sets->Get(ANIMATIONSET);
 	SetAnimationSet(ani_set);
 
 
@@ -64,12 +71,12 @@ BallPlant::BallPlant(float xx, float yy, int nx, int ny)
 		{
 			if (ym - y > x - xm)
 			{
-				vy = 0.05;
+				vy = BALLPLANT_SPEED_Y;
 				vx = -vy;
 			}
 			else
 			{
-				vy = 0.05;
+				vy = BALLPLANT_SPEED_Y;
 				vx = -2 * vy;
 			}
 		}
@@ -77,12 +84,12 @@ BallPlant::BallPlant(float xx, float yy, int nx, int ny)
 		{
 			if (y - ym > x - xm)
 			{
-				vy = -0.05;
+				vy = -BALLPLANT_SPEED_Y;
 				vx = vy;
 			}
 			else
 			{
-				vy = -0.05;
+				vy = -BALLPLANT_SPEED_Y;
 				vx = 2 * vy;
 			}
 		}
@@ -91,12 +98,12 @@ BallPlant::BallPlant(float xx, float yy, int nx, int ny)
 		{
 			if (y-ym<xm-x)
 			{
-				vy = 0.05;
+				vy = BALLPLANT_SPEED_Y;
 				vx = vy;
 			}
 			else
 			{
-				vy = 0.05;
+				vy = BALLPLANT_SPEED_Y;
 				vx = 2 * vy;
 			}
 		}
@@ -104,12 +111,12 @@ BallPlant::BallPlant(float xx, float yy, int nx, int ny)
 		{
 			if (y - ym <xm-x)
 			{
-				vy = -0.03;
+				vy = -BALLPLANT_SPEED_Y2;
 				vx = -vy;
 			}
 			else
 			{
-				vy = -0.03;
+				vy = -BALLPLANT_SPEED_Y2;
 				vx = -2 * vy;
 			}
 		}

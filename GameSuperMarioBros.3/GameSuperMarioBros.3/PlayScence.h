@@ -14,6 +14,35 @@
 #include "Board.h"
 #include "SelectPlayer.h"
 
+#define SCENCE_ID_INTRO	0
+#define SCENCE_ID_MAP	1
+
+#define SPEED_ITEM_Y	0.3f
+
+#define BROAD_X	8
+#define BROAD_Y	200
+
+#define MAN_INTRO_X_MIN	-16
+#define MAN_SPRITE_ID	41001
+#define MAN_SPRITE_ID2	41002
+#define MAN_SPRITE_ID3	41003
+
+#define MAN_YUPDATE	2
+
+#define MAN_SPRITE_MAP	40050
+#define	WORLDMAP_X	5
+#define WORLDMAN_Y	20
+#define TIME_MAX	300
+
+#define MARIOSAMLL_SPEED_Y_PIPE	0.01
+#define MARIOSUPPER_SPEED_Y_PIPE	0.02
+#define MARIO_SPEED_Y_FLY	0.1f
+
+#define MAX_BALL	3
+
+
+
+
 class CPlayScene: public CScene
 {
 protected: 

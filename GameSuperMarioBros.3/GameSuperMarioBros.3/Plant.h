@@ -1,6 +1,13 @@
 #pragma once
 #include "GameObject.h"
 
+#define BRICK_PLANT_WIDTH  16
+#define BRICK_PLANT_HEIGHT 32
+
+#define PLANT_TYPE0	0
+#define PLANT_TYPE1	1
+#define PLANT_TYPE2	2
+
 #define PLANT_STATE_UP	0
 #define PLANT_STATE_DOWN	1
 #define PLANT_STATE_ATTACK	2

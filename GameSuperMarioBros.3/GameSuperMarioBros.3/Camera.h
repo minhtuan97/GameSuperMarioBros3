@@ -3,6 +3,9 @@
 #include <vector>
 #include "GameObject.h"
 
+#define CAMERA_WIDTH 280
+#define CAMERA_HEIGHT 160
+
 class Camera
 {
 private:
