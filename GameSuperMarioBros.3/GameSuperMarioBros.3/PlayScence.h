@@ -16,6 +16,7 @@
 
 #define SCENCE_ID_INTRO	0
 #define SCENCE_ID_MAP	1
+#define SCENCE_ID_4_1	5
 
 #define SPEED_ITEM_Y	0.3f
 
@@ -38,7 +39,7 @@
 #define MARIOSUPPER_SPEED_Y_PIPE	0.02
 #define MARIO_SPEED_Y_FLY	0.1f
 
-#define MAX_BALL	3
+#define MAX_BALL	2
 
 
 

@@ -295,7 +295,7 @@ public:
 	bool canright = false;
 	bool candown = false;
 	bool canup = false;
-
+	bool isDuck = false;
 	int scence = 0;
 	CKoopas* rua;
 	CPortal* portal;

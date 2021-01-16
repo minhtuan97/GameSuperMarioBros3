@@ -57,7 +57,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		return;
 	switch (type)
 	{
-	case 0:
+	case KOOPAS_TYPE_1:
 	{
 		if (ishold)
 		{
@@ -190,15 +190,6 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 				if (dynamic_cast<QuestionBrick*>(e->obj))
 				{
 					QuestionBrick* brick = dynamic_cast<QuestionBrick*>(e->obj);
-
-					if (nx > 0)
-					{
-						vx = KOOPAS_KICK_SPEED;
-					}
-					else if (nx < 0)
-					{
-						vx = -KOOPAS_KICK_SPEED;
-					}
 					if (e->nx != 0)
 					{
 						if (!brick->isColi)
@@ -207,7 +198,14 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 							brick->SetSpeed(0, -0.1);
 						}
 						SetState(KOOPAS_STATE_DIE);
-
+						if (nx > 0)
+						{
+							vx = KOOPAS_KICK_SPEED;
+						}
+						else if (nx < 0)
+						{
+							vx = -KOOPAS_KICK_SPEED;
+						}
 					}
 					if (e->ny>0)
 					{
@@ -246,7 +244,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		}
 		break;
 	}
-	case 1:
+	case KOOPAS_TYPE_2:
 	{
 		if (ishold)
 		{
@@ -384,7 +382,7 @@ void CKoopas::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		}*/
 		break;
 	}
-	case 2:
+	case KOOPAS_TYPE_3:
 		CGameObject::Update(dt);
 		y += dy;
 		
@@ -418,7 +416,7 @@ void CKoopas::Render()
 	int ani = KOOPAS_ANI_WALKING_LEFT;
 	switch (type)
 	{
-	case 0:
+	case KOOPAS_TYPE_1:
 	{
 		if (state == KOOPAS_STATE_DIE)
 		{
@@ -440,7 +438,7 @@ void CKoopas::Render()
 		}
 		break;
 	}
-	case 1:
+	case KOOPAS_TYPE_2:
 	{
 		if (state == KOOPAS_STATE_DIE)
 		{
@@ -468,7 +466,7 @@ void CKoopas::Render()
 		}
 		break;
 	}
-	case 2:
+	case KOOPAS_TYPE_3:
 		if (state == KOOPAS_STATE_DIE)
 		{
 			ani = KOOPAS_ANI_DIE;

@@ -150,9 +150,18 @@ void CMario::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 		}
 		return;
 	}
+
+	float x_camera, y_camera;
+	x_camera = Camera::GetInstance()->GetCameraPosition().x;
+	//y_camera - Camera::GetInstance()->GetCameraPosition().y;
+	//if (x<x_camera || x+BRICK_BBOX_WIDTH>x_camera + SCREEN_WIDTH)
+	//{
+	//	CGame::GetInstance()->SwitchScene(SCENCE_ID_MAP);
+	//	return;
+	//}
 	// Simple fall down
 	vy += MARIO_GRAVITY*dt;
-
+	
 	if (!ispressX&&state!=MARIO_STATE_DIE)
 	{
 		if (isJump && vy < -MARIO_JUMP_SPEED_Y_MAX)
@@ -361,7 +370,6 @@ void CMario::Render()
 		else if (state == MARIO_STATE_PIPE)
 			ani = MARIO_ANIMATION_SMALL_PIPE;
 
-
 		if (isSkid)
 		{
 			if (nx < 0)
@@ -369,6 +377,7 @@ void CMario::Render()
 			else if (nx > 0)
 				ani = MARIO_ANIMATION_SMALL_SKID_RIGHT;
 		}
+
 		if (isKick)
 		{
 			if (nx < 0)
@@ -445,6 +454,13 @@ void CMario::Render()
 				ani = MARIO_ANIMATION_SUPER_SKID_LEFT;
 			else if (nx > 0)
 				ani = MARIO_ANIMATION_SUPER_SKID_RIGHT;
+		}
+		if (isDuck)
+		{
+			if (nx < 0)
+				ani = MARIO_ANIMATION_SUPER_DUCK_LEFT;
+			else if (nx > 0)
+				ani = MARIO_ANIMATION_SUPER_DUCK_RIGHT;
 		}
 		if (isKick)
 		{
@@ -523,6 +539,13 @@ void CMario::Render()
 				ani = MARIO_ANIMATION_FIRE_SKID_LEFT;
 			else if (nx > 0)
 				ani = MARIO_ANIMATION_FIRE_SKID_RIGHT;
+		}
+		if (isDuck)
+		{
+			if (nx < 0)
+				ani = MARIO_ANIMATION_FIRE_DUCK_LEFT;
+			else if (nx > 0)
+				ani = MARIO_ANIMATION_FIRE_DUCK_RIGHT;
 		}
 		if (isKick)
 		{
@@ -618,6 +641,13 @@ void CMario::Render()
 			else if (nx > 0)
 				ani = MARIO_ANIMATION_REACCOON_SKID_RIGHT;
 		}
+		if (isDuck)
+		{
+			if (nx < 0)
+				ani = MARIO_ANIMATION_REACCOON_DUCK_LEFT;
+			else if (nx > 0)
+				ani = MARIO_ANIMATION_REACCOON_DUCK_RIGHT;
+		}
 		if (isKick)
 		{
 			if (nx < 0)
@@ -625,6 +655,7 @@ void CMario::Render()
 			else if (nx > 0)
 				ani = MARIO_ANIMATION_REACCOON_KICK_RIGHT;
 		}
+
 		if (isHold)
 		{
 			if (nx < 0)
@@ -1060,8 +1091,12 @@ bool CMario::ColitionWithObjectStatic(vector<LPGAMEOBJECT>* listObject)
 				if (e->nx != 0)
 				{
 					x += dx;
-					y += dy;
+					//y += dy;
 				}
+			}
+			if (dynamic_cast<WaterPipe*>(e->obj))//if Box
+			{
+				WaterPipe* p = dynamic_cast<WaterPipe*>(e->obj);
 			}
 		}
 	}
@@ -1528,7 +1563,7 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 							{
 								goomba->SetState(GOOMBA_STATE_DIE);
 								goomba->SetSpeed(this->nx * SPEED_GOOMBA_X_DIE, -SPEED_GOOMBA_Y_DIE);
-								//vy -= 0.01;
+								vy -= 0.01;
 							}
 						}
 						else

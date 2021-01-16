@@ -690,13 +690,13 @@ void CPlayScene::Update(DWORD dt)
 				cx += 8;
 		}
 		D3DXVECTOR3 pos = cam->GetCameraPosition();
-		/*if (id == 5)
+		if (id == SCENCE_ID_4_1)
 		{
 			cxcount = cxcount + 0.5;
 			cx = cxcount;
 			cy = 0;
 		}
-		else*/
+		else
 		{
 			if (mapwidth > SCREEN_WIDTH) {
 				if (cx + 5 < SCREEN_WIDTH / 2) {
@@ -745,7 +745,7 @@ void CPlayScene::Update(DWORD dt)
 	if (player->isfinishscence)
 	{
 		//DebugOut(L"doi man\n");
-		CGame::GetInstance()->SwitchScene(1);
+		CGame::GetInstance()->SwitchScene(SCENCE_ID_MAP);
 		player->isfinishscence = false;
 	}
 }
@@ -1072,6 +1072,9 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 	case DIK_R:
 		mario->SetLevel(MARIO_LEVEL_RACCOON);
 		break;
+	case DIK_P:
+		mario->SetLevel(MARIO_LEVEL_BIG);
+		break;
 	}
 }
 
@@ -1086,6 +1089,9 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 	if (((CPlayScene*)scence)->id == SCENCE_ID_MAP) return;
 	switch (KeyCode)
 	{
+	case DIK_DOWN:
+		mario->isDuck = false;
+		break;
 	case DIK_X:
 		mario->ispressX = false;
 		break;
@@ -1210,5 +1216,6 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 		mario->iscanHold = false;
 		mario->isHold = false;		
 	}
-
+	if ((game->IsKeyDown(DIK_LEFT) || !game->IsKeyDown(DIK_RIGHT)) && game->IsKeyDown(DIK_DOWN))
+		mario->isDuck = true;
 }
