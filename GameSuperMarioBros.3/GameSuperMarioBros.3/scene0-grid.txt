@@ -12,7 +12,9 @@
 30	Resources\map\map1\tileset.png	255	255	255
 28	Resources\map\map1\overworld.png	166	185	255
 
-
+#Cameramove	typeScence
+[SETTING]
+0	1
 # id	left	top	right	bottom	texture_id
 [SPRITES]
 # BIG MARIO 

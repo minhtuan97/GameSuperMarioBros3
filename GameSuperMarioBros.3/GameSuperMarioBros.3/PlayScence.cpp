@@ -34,6 +34,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 {
 	key_handler = new CPlayScenceKeyHandler(this);
 	cam = Camera::GetInstance();
+	cam->SetCameraPosition(0, 0);
 	board = new Board(0, 0);
 	time_start = GetTickCount64();
 	map = Map::GetInstance();
@@ -44,6 +45,9 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 	Load scene resources from scene file (textures, sprites, animations and objects)
 	See scene1.txt, scene2.txt for detail format specification
 */
+#define	SCENCE_TYPE_INTRO	0
+#define	SCENCE_TYPE_WORLDMAP	1
+#define	SCENCE_TYPE_GAMEPLAY	2
 
 #define SCENE_SECTION_UNKNOWN -1
 #define SCENE_SECTION_TEXTURES 2
@@ -52,6 +56,7 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 #define SCENE_SECTION_ANIMATION_SETS	5
 #define SCENE_SECTION_OBJECTS	6
 #define SCENE_SECTION_MAP	7
+#define SCENE_SECTION_SETTING	8
 
 
 #define OBJECT_TYPE_MARIO	0
@@ -77,6 +82,23 @@ CPlayScene::CPlayScene(int id, LPCWSTR filePath):
 
 #define MAX_SCENE_LINE 1024
 
+#define BROAD_X_WORLDMAP 8
+#define BROAD_Y_WORLDMAP 200
+
+
+void CPlayScene::_ParseSection_SETTINGSCENCE(string line)
+{
+	vector<string> tokens = split(line);
+
+	if (tokens.size() < 2) return; // skip invalid lines
+	int movecamera = atoi(tokens[0].c_str());
+	if (movecamera == 1)
+		isCameraAutoMove = true;
+	else if(movecamera == 0)
+		isCameraAutoMove = false;
+
+	typeScence = atoi(tokens[1].c_str());
+}
 
 void CPlayScene::_ParseSection_TEXTURES(string line)
 {
@@ -180,7 +202,8 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	CAnimationSets * animation_sets = CAnimationSets::GetInstance();
 
 	CGameObject *obj = NULL;
-	if (id == 0)
+
+	if (typeScence== SCENCE_TYPE_INTRO)
 	{
 		switch (object_type)
 		{
@@ -218,7 +241,7 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 	switch (object_type)
 	{
 	case OBJECT_TYPE_MARIO:
-		if (id == 1)
+		if (typeScence== SCENCE_TYPE_WORLDMAP)
 		{
 			//if (playermap != NULL)
 			{
@@ -229,12 +252,6 @@ void CPlayScene::_ParseSection_OBJECTS(string line)
 				DebugOut(L"[ERROR] MARIO 1 object was created before!\n");
 				return;
 			}
-			//obj = new CMario(x,y); 
-			//obj = CMario::GetInstance();
-			//obj->SetPosition(x, y);
-			//playermap = (CMario*)obj;
-			//playermap->scence = id;
-			//DebugOut(L"[INFO] Player 1 object created!\n");
 		}
 		else
 		{
@@ -492,6 +509,9 @@ void CPlayScene::Load()
 			section = SCENE_SECTION_OBJECTS; continue; }
 		if (line == "[MAP]") {
 			section = SCENE_SECTION_MAP; continue;}
+		if (line == "[SETTING]") {
+			section = SCENE_SECTION_SETTING; continue;
+		}
 		if (line[0] == '[') { section = SCENE_SECTION_UNKNOWN; continue; }	
 
 		//
@@ -505,6 +525,7 @@ void CPlayScene::Load()
 			case SCENE_SECTION_ANIMATION_SETS: _ParseSection_ANIMATION_SETS(line); break;
 			case SCENE_SECTION_OBJECTS: _ParseSection_OBJECTS(line); break;
 			case SCENE_SECTION_MAP: _ParseSection_MAP(line); break;
+			case SCENE_SECTION_SETTING: _ParseSection_SETTINGSCENCE(line); break;
 		}
 	}
 
@@ -519,25 +540,21 @@ void CPlayScene::Update(DWORD dt)
 {
 	// We know that Mario is the first object in the list hence we won't add him into the colliable object list
 	// TO-DO: This is a "dirty" way, need a more organized way 
-
-	if (id == SCENCE_ID_INTRO)
+	switch (typeScence)
 	{
-		//DebugOut(L"update scence intro\n");
+	case SCENCE_TYPE_INTRO:
 		for (int i = 0; i < objects.size(); i++)
 		{
 			objects.at(i)->Update(dt, &objects);
 		}
-		return;		
-	}
-
-	if (id == SCENCE_ID_MAP)
-	{
-		cam->SetCameraPosition(0,0);
+		break;
+	case SCENCE_TYPE_WORLDMAP:
+		cam->SetCameraPosition(0, 0);
 		board->SetPosition(8, 200);
 		playermap->Update(dt, &listscenceselect);
 		return;
-	}
-	if (id > SCENCE_ID_MAP)
+		break;
+	case SCENCE_TYPE_GAMEPLAY:
 	{
 		vector<LPGAMEOBJECT> coObjects;
 		//for (size_t i = 1; i < objects.size(); i++)
@@ -670,103 +687,45 @@ void CPlayScene::Update(DWORD dt)
 			if (listPlant.at(i)->isColi == true)
 				grid->deleteObject(listPlant.at(i));
 		}
-
-
-		// Update camera to follow mario
-		float cx, cy, mapheight, mapwidth;
-		
-		//if (map == NULL)
-		//{
-		//	map = Map::GetInstance();
-		//}
-		mapheight = Map::GetInstance()->GetHeight();
-		mapwidth = Map::GetInstance()->GetWidth();
-		player->GetPosition(cx, cy);
-		if (player->iswag)
-		{
-			if (player->nx > 0)
-				cx -= 8;
-			else if (player->nx < 0)
-				cx += 8;
-		}
-		D3DXVECTOR3 pos = cam->GetCameraPosition();
-		if (id == SCENCE_ID_4_1)
-		{
-			cxcount = cxcount + 0.5;
-			cx = cxcount;
-			cy = 0;
-		}
-		else
-		{
-			if (mapwidth > SCREEN_WIDTH) {
-				if (cx + 5 < SCREEN_WIDTH / 2) {
-					cx = pos.x;
-				}
-				else if (cx + SCREEN_WIDTH / 2 > mapwidth - 1) {
-					cx = mapwidth - SCREEN_WIDTH;
-				}
-				else {
-					cx = cx + 5 + SCREEN_WIDTH / 2 - SCREEN_WIDTH;
-				}
-			}
-			else {
-				cx = 0;
-			}
-
-			if (mapheight > SCREEN_HEIGHT)
-			{
-				if (cy < SCREEN_HEIGHT - 32)
-				{
-					cy = 0;
-				}
-				else if (cy > mapheight - SCREEN_HEIGHT)
-				{
-					cy = mapheight - SCREEN_HEIGHT + 32;
-				}
-				else //if (cy < mapheight - SCREEN_HEIGHT)
-				{
-					cy = cy - SCREEN_HEIGHT / 2 + 32;
-				}
-			}
-			else
-			{
-				cy = mapheight - SCREEN_HEIGHT;
-			}
-			if (cy < 0) cy = 0;
-			//cy -= SCREEN_HEIGHT / 2;
-		}
-		
-
-		cam->SetCameraPosition((int)cx, (int)cy);
+		//update cammera
+		cam->Update(isCameraAutoMove,cxcount);
+		//update board
+		float cx, cy;
+		cx = Camera::GetInstance()->GetCameraPosition().x;
+		cy=Camera::GetInstance()->GetCameraPosition().y;
 		if (board != NULL)
 			board->SetPosition((int)cx + BROAD_X, (int)cy + BROAD_Y);
+		//update sau khi hoan thanh 1 scence
+		if (player->isfinishscence)
+		{
+			CGame::GetInstance()->SwitchScene(SCENCE_ID_MAP);
+			player->isfinishscence = false;
+		}
+		break;
 	}
-	//update sau khi hoan thanh 1 scence
-	if (player->isfinishscence)
-	{
-		//DebugOut(L"doi man\n");
-		CGame::GetInstance()->SwitchScene(SCENCE_ID_MAP);
-		player->isfinishscence = false;
+	default:
+		break;
 	}
 }
 
 void CPlayScene::Render()
 {
-	if (id == 0)
+	switch (typeScence)
 	{
-		DebugOut(L"render scence intro\n");
+	case SCENCE_TYPE_INTRO:
+	{
 		CSprites* sprites = CSprites::GetInstance();
 		if (pace < height)
 		{
-				int y = height - pace;
-				for (; y >= MAN_INTRO_X_MIN; y = y +MAN_INTRO_X_MIN)
-				{
-					sprites->Get(MAN_SPRITE_ID)->Draw(0, y);
-				}
-				sprites->Get(MAN_SPRITE_ID2)->Draw(0, height - pace);
-				pace = pace + MAN_YUPDATE;
-				objects.at(0)->Render();
-				return;
+			int y = height - pace;
+			for (; y >= MAN_INTRO_X_MIN; y = y + MAN_INTRO_X_MIN)
+			{
+				sprites->Get(MAN_SPRITE_ID)->Draw(0, y);
+			}
+			sprites->Get(MAN_SPRITE_ID2)->Draw(0, height - pace);
+			pace = pace + MAN_YUPDATE;
+			objects.at(0)->Render();
+			return;
 
 		}
 		else
@@ -779,9 +738,9 @@ void CPlayScene::Render()
 			objects.at(i)->Render();
 		}
 	}
-	if (id == SCENCE_ID_MAP)
+		break;
+	case SCENCE_TYPE_WORLDMAP:
 	{
-
 		CSprites* sprites = CSprites::GetInstance();
 		sprites->Get(MAN_SPRITE_MAP)->Draw(WORLDMAP_X, WORLDMAN_Y);
 		board->Render(playermap, TIME_MAX - (GetTickCount64() - time_start) / 1000);
@@ -793,13 +752,12 @@ void CPlayScene::Render()
 		{
 			listscenceselect.at(i)->Render();
 		}
-		return;
 	}
-	if (id > SCENCE_ID_MAP)
+		break;
+	case SCENCE_TYPE_GAMEPLAY:
 	{
 		map->DrawMap();
 		grid->GetListOfObjects(&objects);
-		//objects = Camera::GetInstance()->GetlistinCamera(objects);
 		vector<LPGAMEOBJECT> listobject;
 		vector<LPGAMEOBJECT> listitem;
 		vector<LPGAMEOBJECT> listPipe;
@@ -857,6 +815,10 @@ void CPlayScene::Render()
 		}
 
 		board->Render(player, TIME_MAX - (GetTickCount64() - time_start) / 1000);
+		break;
+	}
+	default:
+		break;
 	}
 
 }
@@ -889,13 +851,13 @@ void CPlayScene::Unload()
 
 void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 {
-	//DebugOut(L"[INFO] KeyDown: %d\n", KeyCode);
 	CGame* game = CGame::GetInstance();
 	CMario* mario = ((CPlayScene*)scence)->GetPlayer();
 	CMario *mariomap = ((CPlayScene*)scence)->GetPlayerMap();
 	SelectPlayer *select= ((CPlayScene*)scence)->GetSelectPlayer();
-	if (((CPlayScene*)scence)->id == SCENCE_ID_INTRO)
+	switch (((CPlayScene*)scence)->typeScence)
 	{
+	case SCENCE_TYPE_INTRO:
 		switch (KeyCode)
 		{
 		case DIK_DOWN:
@@ -905,20 +867,18 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 			select->select--;
 			break;
 		case DIK_S:
-			if(((CPlayScene*)scence)->isCanS)
+			if (((CPlayScene*)scence)->isCanS)
 				CGame::GetInstance()->SwitchScene(1);
 			break;
 		}
-		return;
-	}
-	if (((CPlayScene*)scence)->id == SCENCE_ID_MAP)
-	{
+		break;
+	case SCENCE_TYPE_WORLDMAP:
 		if (!(!mariomap->autoleft && !mariomap->autoright && !mariomap->autodown && !mariomap->autoup))
 			return;
 		switch (KeyCode)
 		{
 		case DIK_LEFT:
-			if (!mariomap->autoleft&&mariomap->canleft)
+			if (!mariomap->autoleft && mariomap->canleft)
 			{
 				mariomap->autoleft = true;
 				mariomap->x_star = mariomap->x;
@@ -929,7 +889,7 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 			break;
 		case DIK_RIGHT:
 			mariomap->autoleft = false;
-			if (!mariomap->autoright&&mariomap->canright)
+			if (!mariomap->autoright && mariomap->canright)
 			{
 				mariomap->autoright = true;
 				mariomap->x_star = mariomap->x;
@@ -942,7 +902,7 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 			mariomap->autoleft = false;
 			mariomap->autoright = false;
 			mariomap->autodown = false;
-			if (!mariomap->autoup&&mariomap->canup)
+			if (!mariomap->autoup && mariomap->canup)
 			{
 				mariomap->autoup = true;
 				mariomap->y_start = mariomap->y;
@@ -951,7 +911,7 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 		case DIK_DOWN:
 			mariomap->autoleft = false;
 			mariomap->autoright = false;
-			if (!mariomap->autodown&&mariomap->candown)
+			if (!mariomap->autodown && mariomap->candown)
 			{
 				mariomap->autodown = true;
 				mariomap->y_start = mariomap->y;
@@ -967,113 +927,117 @@ void CPlayScenceKeyHandler::OnKeyDown(int KeyCode)
 		default:
 			break;
 		}
-		return;
-	}
-	if (mario->GetState() == MARIO_STATE_PIPE)
-		return;
-	switch (KeyCode)
-	{
-	case DIK_N:
-		mario->SetPosition(2200, 50);
 		break;
-	case DIK_M:
-		mario->SetPosition(1945, 50);
-		break;
-	case DIK_DOWN:
-		if (mario->isCanSwitchScenceDown)
+	case SCENCE_TYPE_GAMEPLAY:
+		if (mario->GetState() == MARIO_STATE_PIPE)
+			return;
+		switch (KeyCode)
 		{
-			mario->SetState(MARIO_STATE_PIPE);
-			if (mario->GetLevel() == MARIO_LEVEL_SMALL)
-				mario->SetSpeed(0, MARIOSAMLL_SPEED_Y_PIPE);
-			else
-				mario->SetSpeed(0, MARIOSUPPER_SPEED_Y_PIPE);
-
-		}
-		break;
-	case DIK_UP:
-		if (mario->isCanSwitchScenceUP)
-		{
-			mario->SetState(MARIO_STATE_PIPE);
-			if (mario->GetLevel() == MARIO_LEVEL_SMALL)
-				mario->SetSpeed(0, -MARIOSAMLL_SPEED_Y_PIPE);
-			else
-				mario->SetSpeed(0, -MARIOSUPPER_SPEED_Y_PIPE);
-
-		}
-		break;
-	case DIK_X:
-		if (mario->isJump||mario->isjumpX)
+		case DIK_N:
+			mario->SetPosition(2200, 50);
 			break;
-		mario->ispressX = true;
-		mario->isjumpX = true;
-		if (mario->isRun)
-		{
-			if (mario->nx > 0)
-				mario->SetState(MARIO_STATE_JUMP_RIGHT);
-			else
-				mario->SetState(MARIO_STATE_JUMP_LEFT);
-		}
-		else
-		{
-			if (mario->nx > 0)
-				mario->SetState(MARIO_STATE_JUMP_RIGHT);
-			else
-				mario->SetState(MARIO_STATE_JUMP_LEFT);
-		}
-		break;
-	case DIK_S:
-		mario->isUpS = false;
-		if (mario->isJump&&!mario->isBonusvy&&mario->GetLevel()==MARIO_LEVEL_RACCOON)
-		{
-			mario->isfly = true;
-			mario->SetSpeed(mario->vx, -MARIO_SPEED_Y_FLY);
-		}
-		break;
-	case DIK_A: 
-		//add ball
-		if (mario->GetLevel() == MARIO_LEVEL_FIRE)
-		{
-			if (!mario->isthrow)
+		case DIK_M:
+			mario->SetPosition(1945, 50);
+			break;
+		case DIK_DOWN:
+			if (mario->isCanSwitchScenceDown)
 			{
-				if (mario->listball.size() < MAX_BALL)
+				mario->SetState(MARIO_STATE_PIPE);
+				if (mario->GetLevel() == MARIO_LEVEL_SMALL)
+					mario->SetSpeed(0, MARIOSAMLL_SPEED_Y_PIPE);
+				else
+					mario->SetSpeed(0, MARIOSUPPER_SPEED_Y_PIPE);
+
+			}
+			break;
+		case DIK_UP:
+			if (mario->isCanSwitchScenceUP)
+			{
+				mario->SetState(MARIO_STATE_PIPE);
+				if (mario->GetLevel() == MARIO_LEVEL_SMALL)
+					mario->SetSpeed(0, -MARIOSAMLL_SPEED_Y_PIPE);
+				else
+					mario->SetSpeed(0, -MARIOSUPPER_SPEED_Y_PIPE);
+
+			}
+			break;
+		case DIK_X:
+			if (mario->isJump || mario->isjumpX)
+				break;
+			mario->ispressX = true;
+			mario->isjumpX = true;
+			if (mario->isRun)
+			{
+				if (mario->nx > 0)
+					mario->SetState(MARIO_STATE_JUMP_RIGHT);
+				else
+					mario->SetState(MARIO_STATE_JUMP_LEFT);
+			}
+			else
+			{
+				if (mario->nx > 0)
+					mario->SetState(MARIO_STATE_JUMP_RIGHT);
+				else
+					mario->SetState(MARIO_STATE_JUMP_LEFT);
+			}
+			break;
+		case DIK_S:
+			mario->isUpS = false;
+			if (mario->isJump && !mario->isBonusvy && mario->GetLevel() == MARIO_LEVEL_RACCOON)
+			{
+				mario->isfly = true;
+				mario->SetSpeed(mario->vx, -MARIO_SPEED_Y_FLY);
+			}
+			break;
+		case DIK_A:
+			//add ball
+			if (mario->GetLevel() == MARIO_LEVEL_FIRE)
+			{
+				if (!mario->isthrow)
 				{
-					Ball* b = new Ball();
-					b->SetPosition(mario->x, mario->y);
-					b->nx = mario->nx;
-					LPANIMATION_SET ani_set = CAnimationSets::GetInstance()->Get(animationball);
-					b->SetAnimationSet(ani_set);
-					mario->listball.push_back(b);
-					mario->isthrow = true;
-					mario->throw_start = GetTickCount64();
+					if (mario->listball.size() < MAX_BALL)
+					{
+						Ball* b = new Ball();
+						b->SetPosition(mario->x, mario->y);
+						b->nx = mario->nx;
+						LPANIMATION_SET ani_set = CAnimationSets::GetInstance()->Get(animationball);
+						b->SetAnimationSet(ani_set);
+						mario->listball.push_back(b);
+						mario->isthrow = true;
+						mario->throw_start = GetTickCount64();
+					}
 				}
 			}
-		}
-		if (mario->GetLevel() == MARIO_LEVEL_RACCOON)
-		{
-			if (!mario->iswag)
+			if (mario->GetLevel() == MARIO_LEVEL_RACCOON)
 			{
-				mario->iswag = true;
-				mario->wag_start = GetTickCount64();
-				if (mario->nx > 0)
-					mario->SetPosition(mario->x + 8, mario->y);
-				if (mario->nx < 0)
-					mario->SetPosition(mario->x - 8, mario->y);
+				if (!mario->iswag)
+				{
+					mario->iswag = true;
+					mario->wag_start = GetTickCount64();
+					if (mario->nx > 0)
+						mario->SetPosition(mario->x + 8, mario->y);
+					if (mario->nx < 0)
+						mario->SetPosition(mario->x - 8, mario->y);
 
+				}
 			}
-		}
 
+			break;
+		case DIK_ESCAPE:
+			DestroyWindow(game->getHwnd());
+			break;
+		case DIK_F:
+			mario->SetLevel(MARIO_LEVEL_FIRE);
+			break;
+		case DIK_R:
+			mario->SetLevel(MARIO_LEVEL_RACCOON);
+			break;
+		case DIK_P:
+			mario->SetLevel(MARIO_LEVEL_BIG);
+			break;
+		}
 		break;
-	case DIK_ESCAPE:
-		DestroyWindow(game->getHwnd());
-		break;
-	case DIK_F:
-		mario->SetLevel(MARIO_LEVEL_FIRE);
-		break;
-	case DIK_R:
-		mario->SetLevel(MARIO_LEVEL_RACCOON);
-		break;
-	case DIK_P:
-		mario->SetLevel(MARIO_LEVEL_BIG);
+	default:
 		break;
 	}
 }
@@ -1082,40 +1046,39 @@ void CPlayScenceKeyHandler::OnKeyUp(int KeyCode)
 {
 	CGame* game = CGame::GetInstance();
 	CMario* mario = ((CPlayScene*)scence)->GetPlayer();
-	if (((CPlayScene*)scence)->id == SCENCE_ID_INTRO)
+
+	if (((CPlayScene*)scence)->typeScence == SCENCE_TYPE_GAMEPLAY)
 	{
-		return;
-	}
-	if (((CPlayScene*)scence)->id == SCENCE_ID_MAP) return;
-	switch (KeyCode)
-	{
-	case DIK_DOWN:
-		mario->isDuck = false;
-		break;
-	case DIK_X:
-		mario->ispressX = false;
-		break;
-	case DIK_A:
-		mario->SetState(MARIO_STATE_IDLE);
-		if (mario->rua)
+		switch (KeyCode)
 		{
-			mario->rua->ishold = false;
-			mario->rua->SetState(KOOPAS_STATE_KICK);
-			mario->rua == NULL;
+		case DIK_DOWN:
+			mario->isDuck = false;
+			break;
+		case DIK_X:
+			mario->ispressX = false;
+			break;
+		case DIK_A:
+			mario->SetState(MARIO_STATE_IDLE);
+			if (mario->rua)
+			{
+				mario->rua->ishold = false;
+				mario->rua->SetState(KOOPAS_STATE_KICK);
+				mario->rua == NULL;
+			}
+			mario->isColiWithKoopas = false;
+			break;
+		case DIK_M:
+			mario->nx = -mario->nx;
+			break;
+		case DIK_S:
+			mario->isUpS = true;
+			mario->iscanjumpS = false;
+			if (mario->isfly)
+			{
+				mario->isfly = false;
+			}
+			break;
 		}
-		mario->isColiWithKoopas = false;
-		break;
-	case DIK_M:
-		mario->nx = -mario->nx;
-		break;
-	case DIK_S:
-		mario->isUpS = true;
-		mario->iscanjumpS = false;
-		if (mario->isfly)
-		{
-			mario->isfly = false;
-		}
-		break;
 	}
 }
 
@@ -1123,99 +1086,94 @@ void CPlayScenceKeyHandler::KeyState(BYTE *states)
 {
 	CGame *game = CGame::GetInstance();
 	CMario *mario = ((CPlayScene*)scence)->GetPlayer();
-	if (((CPlayScene*)scence)->id == 0)
-	{
-		return;
-	}
-	if (((CPlayScene*)scence)->id == 1)
-		return;
-	// disable control key when Mario die 
-	if (mario->GetState() == MARIO_STATE_DIE) return;
-	if (mario->GetState() == MARIO_STATE_PIPE) return;
 
-	if (game->IsKeyDown(DIK_RIGHT)&&!mario->iswag)
+	// disable control key when Mario die
+	if (((CPlayScene*)scence)->typeScence == SCENCE_TYPE_GAMEPLAY)
 	{
-		if (mario->state == MARIO_STATE_WALKING_LEFT)
+		if (mario->GetState() == MARIO_STATE_DIE) return;
+		if (mario->GetState() == MARIO_STATE_PIPE) return;
+
+		if (game->IsKeyDown(DIK_RIGHT) && !mario->iswag)
 		{
-			mario->isSkid = true;
-			mario->skid_start = GetTickCount64();
-		}
-		mario->SetState(MARIO_STATE_WALKING_RIGHT);
-		if (game->IsKeyDown(DIK_A))
-		{
-			mario->IncreasePower();			
-		}
-		if (mario->isRun)
-		{
-			if (mario->GetState() == MARIO_STATE_WALKING_RIGHT);
+			if (mario->state == MARIO_STATE_WALKING_LEFT)
+			{
+				mario->isSkid = true;
+				mario->skid_start = GetTickCount64();
+			}
+			mario->SetState(MARIO_STATE_WALKING_RIGHT);
+			if (game->IsKeyDown(DIK_A))
+			{
+				mario->IncreasePower();
+			}
+			if (mario->isRun)
+			{
+				if (mario->GetState() == MARIO_STATE_WALKING_RIGHT);
 				mario->SetState(MARIO_STATE_RUN_RIGHT);
-		}
-			
+			}
 
-		
-	}
-	else if (game->IsKeyDown(DIK_LEFT)&&!mario->iswag)
-	{
-		if (mario->state == MARIO_STATE_WALKING_RIGHT)
-		{
-			mario->isSkid = true;
-			mario->skid_start = GetTickCount64();
+
+
 		}
-		mario->SetState(MARIO_STATE_WALKING_LEFT);
+		else if (game->IsKeyDown(DIK_LEFT) && !mario->iswag)
+		{
+			if (mario->state == MARIO_STATE_WALKING_RIGHT)
+			{
+				mario->isSkid = true;
+				mario->skid_start = GetTickCount64();
+			}
+			mario->SetState(MARIO_STATE_WALKING_LEFT);
+			if (game->IsKeyDown(DIK_A))
+			{
+				mario->IncreasePower();
+			}
+
+			if (mario->isRun)
+			{
+				if (mario->GetState() == MARIO_STATE_WALKING_LEFT)
+					mario->SetState(MARIO_STATE_RUN_LEFT);
+			}
+		}
+		//nut s
+		if (game->IsKeyDown(DIK_S) && !mario->isjumpX && mario->iscanjumpS)
+		{
+			if (mario->isRun)
+			{
+				if (mario->nx > 0)
+					mario->SetState(MARIO_STATE_RUNJUMP_RIGHT);
+				else
+					mario->SetState(MARIO_STATE_RUNJUMP_LEFT);
+				mario->vy = -0.1f;
+			}
+			else
+			{
+				if (mario->nx > 0)
+					mario->SetState(MARIO_STATE_JUMP_RIGHT);
+				else
+					mario->SetState(MARIO_STATE_JUMP_LEFT);
+			}
+		}
+		if (!((game->IsKeyDown(DIK_LEFT) || game->IsKeyDown(DIK_RIGHT)) && game->IsKeyDown(DIK_A)))
+			mario->DecreasePower();
+		//nut A
 		if (game->IsKeyDown(DIK_A))
 		{
-			mario->IncreasePower();
-		}
-
-		if (mario->isRun)
-		{
-			if(mario->GetState()== MARIO_STATE_WALKING_LEFT)
-				mario->SetState(MARIO_STATE_RUN_LEFT);
-		}
-	}
-	//nut s
-	if (game->IsKeyDown(DIK_S) && !mario->isjumpX && mario->iscanjumpS)
-	{
-		if (mario->isRun)
-		{
-			if (mario->nx > 0)
-				mario->SetState(MARIO_STATE_RUNJUMP_RIGHT);
-			else
-				mario->SetState(MARIO_STATE_RUNJUMP_LEFT);
-			mario->vy = -0.1f;
+			mario->iscanHold = true;
+			if (mario->isColiWithKoopas)
+			{
+				if (!mario->isHold)
+				{
+					mario->isHold = true;
+					mario->hold_start = GetTickCount64();
+				}
+				mario->rua->ishold = true;
+			}
 		}
 		else
 		{
-			if (mario->nx > 0)
-				mario->SetState(MARIO_STATE_JUMP_RIGHT);
-			else
-				mario->SetState(MARIO_STATE_JUMP_LEFT);
+			mario->iscanHold = false;
+			mario->isHold = false;
 		}
+		if ((game->IsKeyDown(DIK_LEFT) || !game->IsKeyDown(DIK_RIGHT)) && game->IsKeyDown(DIK_DOWN))
+			mario->isDuck = true;
 	}
-	if (!((game->IsKeyDown(DIK_LEFT)|| game->IsKeyDown(DIK_RIGHT)) && game->IsKeyDown(DIK_A)))
-		mario->DecreasePower();
-	//DebugOut(L"power:%f\n", mario->power);
-	//nut A
-	if (game->IsKeyDown(DIK_A))
-	{
-		mario->iscanHold = true;
-		if (mario->isColiWithKoopas)
-		{
-			DebugOut(L"Vao ham hold\n");
-			if (!mario->isHold)
-			{
-				mario->isHold = true;
-				mario->hold_start = GetTickCount64();
-				DebugOut(L"vao ham gettickcount\n");
-			}
-			mario->rua->ishold = true;
-		}
-	}
-	else
-	{
-		mario->iscanHold = false;
-		mario->isHold = false;		
-	}
-	if ((game->IsKeyDown(DIK_LEFT) || !game->IsKeyDown(DIK_RIGHT)) && game->IsKeyDown(DIK_DOWN))
-		mario->isDuck = true;
 }

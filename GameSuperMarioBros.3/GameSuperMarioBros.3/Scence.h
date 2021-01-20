@@ -12,7 +12,8 @@ protected:
 public: 
 	CScene(int id, LPCWSTR filePath);
 	int id;
-
+	int typeScence = -1;
+	bool isCameraAutoMove = false;
 	CKeyEventHandler * GetKeyEventHandler() { return key_handler; }
 	virtual void Load() = 0;
 	virtual void Unload() = 0;

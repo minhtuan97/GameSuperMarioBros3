@@ -15,7 +15,9 @@
 #Map
 [MAP]
 30	Resources\map\map1\tileset.txt
-
+#Cameramove	typeScence
+[SETTING]
+0	2
 # id	left	top	right	bottom	texture_id
 [SPRITES]
 # BIG MARIO 

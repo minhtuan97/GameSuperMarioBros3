@@ -1,4 +1,7 @@
 #include "Camera.h"
+#include "Map.h"
+#include "Mario.h"
+#include "define.h"
 
 Camera* Camera::__instance = NULL;
 
@@ -55,6 +58,77 @@ std::vector<LPGAMEOBJECT> Camera::GetlistinCamera(vector<LPGAMEOBJECT> obj)
 D3DXVECTOR3 Camera::GetCameraPosition()
 {
 	return this->cameraPosition;
+}
+
+void Camera::Update(int typeCamera, float& countx)
+{
+	// Update camera to follow mario
+	float cx, cy, mapheight, mapwidth;
+
+	mapheight = Map::GetInstance()->GetHeight();
+	mapwidth = Map::GetInstance()->GetWidth();
+	CMario* player = CMario::GetInstance();
+
+	player->GetPosition(cx, cy);
+	if (player->iswag)
+	{
+		if (player->nx > 0)
+			cx -= 8;
+		else if (player->nx < 0)
+			cx += 8;
+	}
+	D3DXVECTOR3 pos = GetCameraPosition();
+
+	if (typeCamera)
+	{
+		if (pos.x > mapwidth - SCREEN_WIDTH - 1)
+			return;
+		countx = countx + 0.5;
+		cx = countx;
+		cy = 0;
+		SetCameraPosition((int)countx, 0);
+		return;
+	}
+	else
+	{
+		if (mapwidth > SCREEN_WIDTH) {
+			if (cx + 5 < SCREEN_WIDTH / 2) {
+				cx = pos.x;
+			}
+			else if (cx + SCREEN_WIDTH / 2 > mapwidth - 1) {
+				cx = mapwidth - SCREEN_WIDTH;
+			}
+			else {
+				cx = cx + 5 + SCREEN_WIDTH / 2 - SCREEN_WIDTH;
+			}
+		}
+		else {
+			cx = 0;
+		}
+
+		if (mapheight > SCREEN_HEIGHT)
+		{
+			if (cy < SCREEN_HEIGHT - 32)
+			{
+				cy = 0;
+			}
+			else if (cy > mapheight - SCREEN_HEIGHT)
+			{
+				cy = mapheight - SCREEN_HEIGHT + 32;
+			}
+			else //if (cy < mapheight - SCREEN_HEIGHT)
+			{
+				cy = cy - SCREEN_HEIGHT / 2 + 32;
+			}
+		}
+		else
+		{
+			cy = mapheight - SCREEN_HEIGHT;
+		}
+		if (cy < 0) cy = 0;
+		//cy -= SCREEN_HEIGHT / 2;
+	}
+	SetCameraPosition((int)cx, (int)cy);
 }
 
 void Camera::Unload()

@@ -15,6 +15,9 @@
 #Map
 [MAP]
 31	Resources\map\map1\tilsetmapcoin.txt
+#Cameramove	typeScence
+[SETTING]
+0	2
 
 # id	left	top	right	bottom	texture_id
 [SPRITES]

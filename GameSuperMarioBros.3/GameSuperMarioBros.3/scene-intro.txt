@@ -10,7 +10,9 @@
 25	textures\font.png	255	0	255
 41	textures\title.png	40	40	40
 
-
+#Cameramove	typeScence
+[SETTING]
+0	0
 
 # id	left	top	right	bottom	texture_id
 [SPRITES]

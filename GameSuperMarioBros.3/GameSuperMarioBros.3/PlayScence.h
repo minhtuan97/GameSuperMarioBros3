@@ -71,6 +71,7 @@ protected:
 	bool khoitao = false;
 	float cxcount = 0;
 
+	void _ParseSection_SETTINGSCENCE(string line);
 	void _ParseSection_TEXTURES(string line);
 	void _ParseSection_SPRITES(string line);
 	void _ParseSection_ANIMATIONS(string line);

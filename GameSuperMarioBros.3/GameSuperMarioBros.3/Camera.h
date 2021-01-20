@@ -23,6 +23,7 @@ public:
 	void Setwidthheight(int x, int y);
 	std::vector<LPGAMEOBJECT> GetlistinCamera(vector<LPGAMEOBJECT> obj);
 	D3DXVECTOR3 GetCameraPosition();
+	void Update(int typeCamera, float& countx);
 	void Unload();
 	~Camera();
 
