@@ -51,7 +51,7 @@ void CGoomba::Update(DWORD dt, vector<LPGAMEOBJECT> *coObjects)
 	float ycam = Camera::GetInstance()->GetCameraPosition().y;
 	if (x > xcam + SCREEN_WIDTH+GOOMBA_BBOX_WIDTH || x < xcam-GOOMBA_BBOX_WIDTH)
 		return;
-	if (type == 1)
+	if (type == GOOMBA_TYPE_FLY)
 	{
 		if (GetTickCount64() - startfly > TIME_FLY && state == GOOMBA_STATE_FLY)
 		{

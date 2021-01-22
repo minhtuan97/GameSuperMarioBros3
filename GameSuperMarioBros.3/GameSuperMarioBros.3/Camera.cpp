@@ -60,7 +60,7 @@ D3DXVECTOR3 Camera::GetCameraPosition()
 	return this->cameraPosition;
 }
 
-void Camera::Update(int typeCamera, float& countx)
+void Camera::Update(DWORD dt, int typeCamera, float& countx)
 {
 	// Update camera to follow mario
 	float cx, cy, mapheight, mapwidth;
@@ -83,7 +83,7 @@ void Camera::Update(int typeCamera, float& countx)
 	{
 		if (pos.x > mapwidth - SCREEN_WIDTH - 1)
 			return;
-		countx = countx + 0.5;
+		countx = countx + CAMERA_SPEED_X*dt;
 		cx = countx;
 		cy = 0;
 		SetCameraPosition((int)countx, 0);

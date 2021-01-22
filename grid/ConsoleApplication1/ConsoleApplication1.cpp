@@ -227,8 +227,7 @@ string _ParseSection_SCENES(string line)
 	LPCWSTR path = ToLPCWSTR(tokens[1]);
 	string newpath = insertGrid(tokens[1]);
 	lineresult = tokens[0] + '\t' + insertGrid(tokens[1])+'\n';
-	/*LPSCENE scene = new CPlayScene(id, path);
-	scenes[id] = scene;*/
+
 	//doc secence
 	Docfile(path, ToLPCWSTR(newpath));
 	return lineresult;

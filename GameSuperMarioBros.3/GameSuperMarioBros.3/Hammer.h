@@ -7,10 +7,11 @@
 #define SPEED_X_HAMMER	0.07
 #define TIME_SPEED_VY	300
 #define TIME_SPEED_VY_2	2300
-#define TIME_SPEED_VY_3	2600
+#define TIME_SPEED_VY_3	2800
 #define TIME_HAMMER	5500
 
-#define HAMMER_SPEED_Y	0.1f
+#define HAMMER_SPEED_Y	0.05f
+#define HAMMER_SPEED_2Y	0.1f
 
 class Hammer:public CGameObject
 {

@@ -7,7 +7,8 @@
 #define BBOX_HAMMERBROS_HEIGHT	33
 #define SPEED_X_HAMMERBROS	0.02f
 #define TIME_CRATE_HAMMER	3000
-#define TIME_DIE	400
+#define TIME_DIE	600
+#define HAMMERBROS_G	0.002f
 class HammerBros: public CGameObject
 {
 public:

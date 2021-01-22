@@ -6,6 +6,8 @@
 #define CAMERA_WIDTH 280
 #define CAMERA_HEIGHT 160
 
+#define CAMERA_SPEED_X	0.02f
+
 class Camera
 {
 private:
@@ -23,7 +25,7 @@ public:
 	void Setwidthheight(int x, int y);
 	std::vector<LPGAMEOBJECT> GetlistinCamera(vector<LPGAMEOBJECT> obj);
 	D3DXVECTOR3 GetCameraPosition();
-	void Update(int typeCamera, float& countx);
+	void Update(DWORD dt, int typeCamera, float& countx);
 	void Unload();
 	~Camera();
 

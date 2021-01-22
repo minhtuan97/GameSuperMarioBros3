@@ -70,7 +70,7 @@ void HammerBros::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		x = x_min;
 	}
 	CGameObject::Update(dt, coObjects);
-	vy += 0.002f * dt;
+	vy += HAMMERBROS_G * dt;
 	
 
 		
@@ -91,7 +91,8 @@ void HammerBros::Update(DWORD dt, vector<LPGAMEOBJECT>* coObjects)
 		vector<LPCOLLISIONEVENT> coEventsResult;
 
 		coEvents.clear();
-		CalcPotentialCollisions(&list, coEvents);
+		if(state!=HammerBros_STATE_DIE)
+			CalcPotentialCollisions(&list, coEvents);
 
 		if (coEvents.size() == 0)
 		{
@@ -145,7 +146,7 @@ void HammerBros::SetState(int state)
 	{
 	case HammerBros_STATE_DIE:
 		vx = 0;
-		vy = 0;
+		//vy = 0;
 		startdie = GetTickCount64();
 		break;
 	case HammerBros_STATE_WALKING:

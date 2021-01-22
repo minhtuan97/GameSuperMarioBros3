@@ -550,7 +550,7 @@ void CPlayScene::Update(DWORD dt)
 		break;
 	case SCENCE_TYPE_WORLDMAP:
 		cam->SetCameraPosition(0, 0);
-		board->SetPosition(8, 200);
+		board->SetPosition(BROAD_X_WORLDMAP, BROAD_Y_WORLDMAP);
 		playermap->Update(dt, &listscenceselect);
 		return;
 		break;
@@ -688,7 +688,7 @@ void CPlayScene::Update(DWORD dt)
 				grid->deleteObject(listPlant.at(i));
 		}
 		//update cammera
-		cam->Update(isCameraAutoMove,cxcount);
+		cam->Update(dt, isCameraAutoMove,cxcount);
 		//update board
 		float cx, cy;
 		cx = Camera::GetInstance()->GetCameraPosition().x;
@@ -763,6 +763,7 @@ void CPlayScene::Render()
 		vector<LPGAMEOBJECT> listPipe;
 		vector<LPGAMEOBJECT> listPlant;
 		vector<LPGAMEOBJECT> listbrick;
+		vector<LPGAMEOBJECT> listboomberang;
 
 		for (int i = 0; i < objects.size(); i++)
 		{
@@ -776,6 +777,8 @@ void CPlayScene::Render()
 						listPlant.push_back(objects.at(i));
 					else if (dynamic_cast<QuestionBrick*>(objects.at(i)))
 						listbrick.push_back(objects.at(i));
+					else if (dynamic_cast<Hammer*>(objects.at(i)))
+						listboomberang.push_back(objects.at(i));
 					else
 						listobject.push_back(objects.at(i));
 		}
@@ -806,6 +809,10 @@ void CPlayScene::Render()
 		for (int i = 0; i < listPipe.size(); i++)
 		{
 			listPipe[i]->Render();
+		}
+		for (int i = 0; i < listboomberang.size(); i++)
+		{
+			listboomberang[i]->Render();
 		}
 		if (player->iscard)
 		{

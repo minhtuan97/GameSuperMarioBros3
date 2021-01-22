@@ -1283,8 +1283,11 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 		if (dynamic_cast<HammerBros*>(listObject->at(i)))
 		{
 			HammerBros* k = dynamic_cast<HammerBros*>(listObject->at(i));
-			listenemy.push_back(listObject->at(i));
-			listHammerBros.push_back(listObject->at(i));
+			if (k->GetState() != HammerBros_STATE_DIE)
+			{
+				listenemy.push_back(listObject->at(i));
+				listHammerBros.push_back(listObject->at(i));
+			}
 		}
 	}
 
@@ -1702,8 +1705,9 @@ void CMario::ColitionWithEnemy(vector<LPGAMEOBJECT>* listObject)
 				if (h->GetState() != HammerBros_STATE_DIE)
 				{
 					h->SetState(HammerBros_STATE_DIE);
+					h->SetSpeed(0, -0.5f);
 					//h->iskilltop = true;
-					vy = -MARIO_JUMP_DEFLECT_SPEED;
+					vy = -MARIO_JUMP_DEFLECTHAMMER_SPEED;
 					enymy += 100;
 				}
 				enymy += 100;
